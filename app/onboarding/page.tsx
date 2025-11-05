@@ -1,13 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 import { createPet, getUserPets } from '@/lib/services/pets';
 
+// Top 50 most common dog breeds
+const DOG_BREEDS = [
+  'Labrador Retriever', 'German Shepherd', 'Golden Retriever', 'French Bulldog',
+  'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'German Shorthaired Pointer',
+  'Yorkshire Terrier', 'Boxer', 'Dachshund', 'Siberian Husky', 'Great Dane',
+  'Pembroke Welsh Corgi', 'Doberman Pinscher', 'Australian Shepherd', 'Miniature Schnauzer',
+  'Cavalier King Charles Spaniel', 'Shih Tzu', 'Boston Terrier', 'Havanese',
+  'Pomeranian', 'Cocker Spaniel', 'Shetland Sheepdog', 'Brittany', 'English Springer Spaniel',
+  'Border Collie', 'Bernese Mountain Dog', 'Mastiff', 'Shih Tzu', 'Basset Hound',
+  'Weimaraner', 'Belgian Malinois', 'Vizsla', 'Pug', 'Collie', 'Chihuahua',
+  'Maltese', 'English Setter', 'Rhodesian Ridgeback', 'Newfoundland', 'Bloodhound',
+  'Saint Bernard', 'Alaskan Malamute', 'Irish Setter', 'Bichon Frise', 'Akita',
+  'Chesapeake Bay Retriever', 'Great Pyrenees', 'Bull Terrier', 'Pointer'
+];
+
+// Top 50 most common cat breeds
+const CAT_BREEDS = [
+  'Persian', 'Maine Coon', 'British Shorthair', 'Ragdoll', 'Exotic Shorthair',
+  'American Shorthair', 'Scottish Fold', 'Abyssinian', 'Sphynx', 'Russian Blue',
+  'Bengal', 'Siamese', 'Norwegian Forest Cat', 'Oriental', 'American Curl',
+  'Devon Rex', 'Himalayan', 'Birman', 'Turkish Angora', 'Chartreux',
+  'Balinese', 'Manx', 'Cornish Rex', 'Tonkinese', 'Burmese', 'Egyptian Mau',
+  'Japanese Bobtail', 'Munchkin', 'Selkirk Rex', 'Somali', 'Turkish Van',
+  'LaPerm', 'Ocicat', 'Savannah', 'Serengeti', 'Toyger', 'American Bobtail',
+  'Highlander', 'Khao Manee', 'Lykoi', 'Minskin', 'Napoleon', 'Pixie-bob',
+  'Ragamuffin', 'Ragdoll', 'Siberian', 'Snowshoe', 'Sokoke', 'Thai', 'Tiffany',
+  'Tonkinese', 'Turkish Van'
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const auth = useRequireAuth();
+  const breedInputRef = useRef<HTMLInputElement>(null);
+  const breedListRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -20,6 +51,8 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showBreedSuggestions, setShowBreedSuggestions] = useState(false);
+  const [filteredBreeds, setFilteredBreeds] = useState<string[]>([]);
 
   // Redirect to chat if user already has pets
   useEffect(() => {
@@ -38,6 +71,46 @@ export default function OnboardingPage() {
 
     checkExistingPets();
   }, [auth?.user?.uid, router]);
+
+  // Update breed suggestions when species or breed input changes
+  useEffect(() => {
+    if (!formData.species) {
+      setFilteredBreeds([]);
+      setShowBreedSuggestions(false);
+      return;
+    }
+
+    const breeds = formData.species === 'dog' ? DOG_BREEDS : CAT_BREEDS;
+    
+    if (!formData.breed.trim()) {
+      setFilteredBreeds(breeds);
+      setShowBreedSuggestions(false);
+      return;
+    }
+
+    const filtered = breeds.filter(breed =>
+      breed.toLowerCase().includes(formData.breed.toLowerCase())
+    );
+    setFilteredBreeds(filtered);
+    setShowBreedSuggestions(filtered.length > 0 && formData.breed.trim() !== '');
+  }, [formData.species, formData.breed]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        breedInputRef.current &&
+        breedListRef.current &&
+        !breedInputRef.current.contains(event.target as Node) &&
+        !breedListRef.current.contains(event.target as Node)
+      ) {
+        setShowBreedSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Show loading screen while checking auth or redirecting
   if (!auth) {
@@ -87,7 +160,7 @@ export default function OnboardingPage() {
       setSuccess(true);
 
       setTimeout(() => {
-        router.push(`/chat?petId=${newPet.id}`);
+        router.push(`/how-it-works?petId=${newPet.id}`);
       }, 1000);
     } catch (err) {
       console.error('Error saving pet:', err);
@@ -96,43 +169,43 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleBreedSelect = (breed: string) => {
+    setFormData({ ...formData, breed });
+    setShowBreedSuggestions(false);
+    breedInputRef.current?.blur();
+  };
+
+  const handleBreedChange = (value: string) => {
+    setFormData({ ...formData, breed: value });
+    if (value.trim() && formData.species) {
+      setShowBreedSuggestions(true);
+    }
+  };
+
+  const availableBreeds = formData.species === 'dog' ? DOG_BREEDS : CAT_BREEDS;
+
   return (
-    <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+    <div className="min-h-screen bg-[#073F6C] flex items-center justify-center px-4 sm:px-6 py-6">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-12 h-12 mb-6 rounded-sm bg-[var(--accent)]">
-            <svg
-              className="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-light text-[var(--text-primary)] mb-3">
-            Pet Information
-          </h1>
-          <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-white mb-2">
             Tell us about your pet
+          </h1>
+          <p className="text-white/80 text-sm leading-relaxed">
+            Let&apos;s get to know your furry friend!
           </p>
         </div>
 
-        {/* Form */}
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-sm p-8 sm:p-10 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-7">
+        {/* Form Card */}
+        <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error Message */}
             {error && (
-              <div className="p-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm fade-in">
-                <div className="flex items-start gap-3">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl fade-in">
+                <div className="flex items-start gap-2">
                   <svg
-                    className="w-4 h-4 text-[var(--text-secondary)] flex-shrink-0 mt-0.5"
+                    className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -144,17 +217,17 @@ export default function OnboardingPage() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-[var(--text-secondary)] text-xs font-medium leading-relaxed">{error}</p>
+                  <p className="text-red-600 text-xs font-medium leading-relaxed">{error}</p>
                 </div>
               </div>
             )}
 
             {/* Success Message */}
             {success && (
-              <div className="p-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm fade-in">
-                <div className="flex items-center gap-3">
+              <div className="p-3 bg-green-50 border border-green-200 rounded-xl fade-in">
+                <div className="flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-[var(--accent)] flex-shrink-0"
+                    className="w-4 h-4 text-green-600 flex-shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -166,7 +239,7 @@ export default function OnboardingPage() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <p className="text-[var(--text-primary)] text-xs font-medium leading-relaxed">
+                  <p className="text-green-600 text-xs font-medium leading-relaxed">
                     Pet saved successfully. Redirecting...
                   </p>
                 </div>
@@ -175,15 +248,15 @@ export default function OnboardingPage() {
 
             {/* Name */}
             <div>
-              <label htmlFor="name" className="block text-xs font-medium text-[var(--text-primary)] mb-2.5">
-                Name *
+              <label htmlFor="name" className="block text-xs font-medium text-[#073F6C] mb-1.5">
+                Name
               </label>
               <input
                 type="text"
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="input-field"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 placeholder="e.g., Max, Bella"
                 disabled={loading}
               />
@@ -191,8 +264,8 @@ export default function OnboardingPage() {
 
             {/* Species */}
             <div>
-              <label className="block text-xs font-medium text-[var(--text-primary)] mb-3.5">
-                Species *
+              <label className="block text-xs font-medium text-[#073F6C] mb-2">
+                Species
               </label>
               <div className="flex gap-8">
                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -201,11 +274,14 @@ export default function OnboardingPage() {
                     name="species"
                     value="dog"
                     checked={formData.species === 'dog'}
-                    onChange={(e) => setFormData({ ...formData, species: e.target.value as 'dog' })}
-                    className="w-4 h-4 text-[var(--text-primary)] focus:ring-[var(--text-primary)] cursor-pointer"
+                    onChange={(e) => {
+                      setFormData({ ...formData, species: e.target.value as 'dog', breed: '' });
+                      setShowBreedSuggestions(false);
+                    }}
+                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
                     disabled={loading}
                   />
-                  <span className="text-sm text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
+                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
                     Dog
                   </span>
                 </label>
@@ -215,11 +291,14 @@ export default function OnboardingPage() {
                     name="species"
                     value="cat"
                     checked={formData.species === 'cat'}
-                    onChange={(e) => setFormData({ ...formData, species: e.target.value as 'cat' })}
-                    className="w-4 h-4 text-[var(--text-primary)] focus:ring-[var(--text-primary)] cursor-pointer"
+                    onChange={(e) => {
+                      setFormData({ ...formData, species: e.target.value as 'cat', breed: '' });
+                      setShowBreedSuggestions(false);
+                    }}
+                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
                     disabled={loading}
                   />
-                  <span className="text-sm text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
+                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
                     Cat
                   </span>
                 </label>
@@ -227,11 +306,11 @@ export default function OnboardingPage() {
             </div>
 
             {/* Age and Weight Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Age */}
               <div>
-                <label htmlFor="age" className="block text-xs font-medium text-[var(--text-primary)] mb-2.5">
-                  Age (years) *
+                <label htmlFor="age" className="block text-xs font-medium text-[#073F6C] mb-1.5">
+                  Age (years)
                 </label>
                 <input
                   type="number"
@@ -240,7 +319,7 @@ export default function OnboardingPage() {
                   step="0.5"
                   value={formData.age}
                   onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                  className="input-field"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="e.g., 3"
                   disabled={loading}
                 />
@@ -248,8 +327,8 @@ export default function OnboardingPage() {
 
               {/* Weight */}
               <div>
-                <label htmlFor="weight" className="block text-xs font-medium text-[var(--text-primary)] mb-2.5">
-                  Weight (kg) *
+                <label htmlFor="weight" className="block text-xs font-medium text-[#073F6C] mb-1.5">
+                  Weight (kg)
                 </label>
                 <input
                   type="number"
@@ -258,48 +337,73 @@ export default function OnboardingPage() {
                   step="0.1"
                   value={formData.weight}
                   onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                  className="input-field"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="e.g., 15"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            {/* Breed */}
-            <div>
-              <label htmlFor="breed" className="block text-xs font-medium text-[var(--text-primary)] mb-2.5">
-                Breed *
+            {/* Breed with Autocomplete */}
+            <div className="relative">
+              <label htmlFor="breed" className="block text-xs font-medium text-[#073F6C] mb-1.5">
+                Breed
               </label>
               <input
+                ref={breedInputRef}
                 type="text"
                 id="breed"
                 value={formData.breed}
-                onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                className="input-field"
-                placeholder="e.g., Golden Retriever, Persian"
-                disabled={loading}
+                onChange={(e) => handleBreedChange(e.target.value)}
+                onFocus={() => {
+                  if (formData.species && formData.breed.trim()) {
+                    setShowBreedSuggestions(true);
+                  }
+                }}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                placeholder={formData.species ? `Select or type ${formData.species} breed...` : 'Select species first'}
+                disabled={loading || !formData.species}
               />
+              
+              {/* Autocomplete Suggestions */}
+              {showBreedSuggestions && filteredBreeds.length > 0 && (
+                <div
+                  ref={breedListRef}
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto"
+                >
+                  {filteredBreeds.slice(0, 15).map((breed) => (
+                    <button
+                      key={breed}
+                      type="button"
+                      onClick={() => handleBreedSelect(breed)}
+                      className="w-full px-4 py-2.5 text-left text-sm text-[#073F6C] hover:bg-[#073F6C]/5 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                    >
+                      {breed}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6">
+            <div className="pt-3">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary flex items-center justify-center gap-2"
+                className="w-full px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="spinner w-4 h-4"></div>
-                    <span className="text-sm">Saving</span>
+                    <div className="spinner w-4 h-4 border-2 border-white border-t-transparent"></div>
+                    <span>Saving</span>
                   </>
                 ) : (
-                  <span className="text-sm">Continue</span>
+                  'Continue'
                 )}
               </button>
             </div>
 
-            <p className="text-center text-xs text-[var(--text-tertiary)] leading-relaxed mt-2">
+            <p className="text-center text-xs text-gray-500 leading-relaxed mt-2">
               * All fields are required
             </p>
           </form>
