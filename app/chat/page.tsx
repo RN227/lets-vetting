@@ -7,7 +7,8 @@ import { getPetById } from '@/lib/services/pets';
 import {
   createConversation,
   addMessage,
-  getConversationMessages
+  getConversationMessages,
+  updateMessageFeedback
 } from '@/lib/services/conversations';
 import { useAuth } from '@/lib/auth-context';
 import type { Pet, Message } from '@/types';
@@ -179,6 +180,28 @@ export default function ChatPage() {
     }
   };
 
+  const handleFeedback = async (messageId: string, feedback: 'up' | 'down') => {
+    try {
+      // Update UI immediately (optimistic update)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, feedback } : msg
+        )
+      );
+
+      // Update in Firestore
+      await updateMessageFeedback(messageId, feedback);
+    } catch (err) {
+      console.error('Error updating feedback:', err);
+      // Revert on error
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, feedback: null } : msg
+        )
+      );
+    }
+  };
+
   // Show loading screen while checking auth or redirecting
   if (!auth) {
     return <AuthLoadingScreen />;
@@ -288,6 +311,34 @@ export default function ChatPage() {
                     >
                       {formatTime(msg.createdAt)}
                     </p>
+
+                    {/* Feedback buttons for assistant messages */}
+                    {msg.role === 'assistant' && (
+                      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                        <button
+                          onClick={() => handleFeedback(msg.id, 'up')}
+                          className={`text-lg transition-all duration-200 hover:scale-110 ${
+                            msg.feedback === 'up'
+                              ? 'opacity-100 scale-110'
+                              : 'opacity-40 hover:opacity-70'
+                          }`}
+                          title="Helpful"
+                        >
+                          👍
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(msg.id, 'down')}
+                          className={`text-lg transition-all duration-200 hover:scale-110 ${
+                            msg.feedback === 'down'
+                              ? 'opacity-100 scale-110'
+                              : 'opacity-40 hover:opacity-70'
+                          }`}
+                          title="Not helpful"
+                        >
+                          👎
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
