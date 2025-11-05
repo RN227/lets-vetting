@@ -42,6 +42,13 @@ function ChatPageContent() {
   // Initialize: Fetch pet and create/load conversation
   useEffect(() => {
     async function initialize() {
+      // Don't proceed if auth is not ready or user is not authenticated
+      if (!auth || !user) {
+        // If auth is null, we're redirecting (handled by useRequireAuth)
+        // If auth exists but no user, wait for auth to complete
+        return;
+      }
+
       if (!petId) {
         setError('No pet ID provided');
         setLoading(false);
@@ -49,7 +56,7 @@ function ChatPageContent() {
       }
 
       try {
-        // Fetch pet details
+        // Fetch pet details (only if user is authenticated)
         const petData = await getPetById(petId);
 
         if (!petData) {
@@ -59,7 +66,7 @@ function ChatPageContent() {
         }
 
         // Verify pet belongs to current user
-        if (user && petData.userId !== user.uid) {
+        if (petData.userId !== user.uid) {
           setError('You do not have access to this pet');
           setLoading(false);
           return;
@@ -88,7 +95,7 @@ function ChatPageContent() {
     }
 
     initialize();
-  }, [petId, existingConversationId, user?.uid]);
+  }, [petId, existingConversationId, auth, user]);
 
   const handleSignOut = async () => {
     try {
