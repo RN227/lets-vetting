@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect based on whether user has pets
   useEffect(() => {
     async function checkUserPets() {
       if (user && !loading) {
@@ -47,15 +46,14 @@ export default function LoginPage() {
     }
   };
 
-  // Beautiful loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="text-center fade-in">
-          <div className="w-16 h-16 mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#073F6C]">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4">
             <div className="spinner w-full h-full"></div>
           </div>
-          <p className="text-gray-600 font-medium">Loading...</p>
+          <p className="text-white text-sm">Loading</p>
         </div>
       </div>
     );
@@ -66,57 +64,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8 sm:px-6">
-      <div className="max-w-md w-full fade-in">
-        {/* Card Container */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 sm:p-10 border border-gray-100">
-          {/* Logo/Brand */}
-          <div className="text-center mb-10">
-            <div className="inline-block mb-4">
-              <div className="text-6xl sm:text-7xl animate-bounce">🐾</div>
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-              LetsVet
-            </h1>
-            <p className="text-gray-600 text-lg">
-              AI-powered pet health guidance
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-[#073F6C] px-4 sm:px-6">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-12">
+          <div className="mb-8 flex justify-center">
+            <img
+              src="/logo.png"
+              alt="LetsVet Logo"
+              className="max-w-[280px] w-auto h-auto"
+              style={{ maxWidth: '280px', height: 'auto' }}
+            />
           </div>
+          
+          {/* Tagline */}
+          <p className="text-white text-base leading-relaxed font-light">
+            Instant AI guidance for your pet&apos;s health concerns
+          </p>
+        </div>
 
-          {/* Welcome Message */}
-          <div className="mb-8 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              Welcome
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              Sign in to get personalized health advice for your furry friend
-            </p>
-          </div>
-
+        {/* Card */}
+        <div className="bg-[#073F6C]">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-2xl fade-in">
+            <div className="mb-6 p-4 bg-white/10 border border-white/20 rounded-xl fade-in">
               <div className="flex items-start gap-3">
-                <span className="text-red-500 text-xl flex-shrink-0">⚠️</span>
-                <p className="text-red-700 text-sm font-medium">{error}</p>
+                <svg
+                  className="w-4 h-4 text-white flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-white text-xs font-medium leading-relaxed">{error}</p>
               </div>
             </div>
           )}
 
-          {/* Sign In Button */}
+          {/* Google Sign In Button */}
           <button
             onClick={handleSignIn}
             disabled={isSigningIn}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-gray-300 rounded-2xl hover:bg-gray-50 hover:border-blue-400 hover:shadow-lg active:scale-98 transition-all duration-200 font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm touch-target"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSigningIn ? (
               <>
-                <div className="spinner w-5 h-5"></div>
-                <span>Signing in...</span>
+                <div className="spinner w-4 h-4 border-2 border-[#073F6C] border-t-transparent"></div>
+                <span>Signing In</span>
               </>
             ) : (
               <>
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -140,19 +144,9 @@ export default function LoginPage() {
           </button>
 
           {/* Footer Text */}
-          <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed">
-            By signing in, you agree to our Terms of Service<br className="sm:hidden" /> and Privacy Policy
+          <p className="mt-8 text-center text-xs text-white/70 leading-relaxed">
+            By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
-        </div>
-
-        {/* Additional Info - Mobile optimized */}
-        <div className="mt-6 sm:mt-8 text-center px-4">
-          <div className="inline-flex items-center gap-2 text-gray-700 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full">
-            <span className="text-xl">💬</span>
-            <p className="text-sm font-medium">
-              Instant AI guidance for pet health
-            </p>
-          </div>
         </div>
       </div>
     </div>

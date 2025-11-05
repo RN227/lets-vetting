@@ -234,11 +234,11 @@ export default function ChatPage() {
 
   if (error && !pet) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+      <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-[var(--surface)] border border-[var(--border)] rounded-sm p-8 shadow-sm">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-            <p className="text-gray-700 mb-6">{error || 'Pet not found'}</p>
+            <h1 className="text-lg font-medium text-[var(--text-primary)] mb-4">Error</h1>
+            <p className="text-[var(--text-secondary)] text-sm mb-6">{error || 'Pet not found'}</p>
             <button
               onClick={() => router.push('/onboarding')}
               className="btn-primary"
@@ -252,18 +252,46 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-[var(--surface)]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-4 shadow-sm flex-shrink-0">
+      <header className="bg-[var(--surface)] border-b border-[var(--border)] px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Pet Info */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-2xl">
-              {pet?.species === 'dog' ? '🐕' : '🐈'}
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 bg-[var(--accent)] rounded-sm flex items-center justify-center flex-shrink-0">
+              {pet?.species === 'dog' ? (
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+              )}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{pet?.name}</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-base font-medium text-[var(--text-primary)] leading-tight">{pet?.name}</h1>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-0.5">
                 {pet?.species.charAt(0).toUpperCase()}
                 {pet?.species.slice(1)} • {pet?.age}{' '}
                 {pet?.age === 1 ? 'year' : 'years'} • {pet?.breed}
@@ -272,10 +300,11 @@ export default function ChatPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => router.push(`/history?petId=${petId}`)}
-              className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 flex items-center gap-2"
+              className="btn-ghost px-3 py-2 text-xs font-medium flex items-center gap-1.5"
+              title="View history"
             >
               <svg
                 className="w-4 h-4"
@@ -286,37 +315,62 @@ export default function ChatPage() {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              History
+              <span className="hidden sm:inline">History</span>
             </button>
             <button
               onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              className="btn-ghost px-3 py-2 text-xs font-medium"
+              title="Sign out"
             >
-              Sign Out
+              <span className="hidden sm:inline">Sign Out</span>
+              <svg
+                className="w-4 h-4 sm:hidden"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
             </button>
           </div>
         </div>
       </header>
 
       {/* Chat Messages Area */}
-      <main className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-3xl mx-auto space-y-4">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-10">
+        <div className="max-w-3xl mx-auto space-y-5">
           {messages.length === 0 ? (
             /* Empty state */
-            <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-4xl">💬</span>
+            <div className="flex flex-col items-center justify-center h-full text-center py-16">
+              <div className="w-14 h-14 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm flex items-center justify-center mb-8">
+                <svg
+                  className="w-7 h-7 text-[var(--text-secondary)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Start a conversation about {pet?.name}
+              <h2 className="text-xl font-light text-[var(--text-primary)] mb-3">
+                Start a conversation
               </h2>
-              <p className="text-gray-600 max-w-md">
-                Describe any symptoms or health concerns you have about {pet?.name},
-                and I&apos;ll help provide guidance on the best course of action.
+              <p className="text-sm text-[var(--text-secondary)] max-w-md leading-relaxed">
+                Describe any symptoms or health concerns about {pet?.name}, and I&apos;ll provide guidance on the best course of action.
               </p>
             </div>
           ) : (
@@ -338,8 +392,8 @@ export default function ChatPage() {
                       {msg.content}
                     </p>
                     <p
-                      className={`text-xs mt-2 ${
-                        msg.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                      className={`text-xs mt-4 ${
+                        msg.role === 'user' ? 'text-white/70' : 'text-[var(--text-tertiary)]'
                       }`}
                     >
                       {formatTime(msg.createdAt)}
@@ -347,30 +401,54 @@ export default function ChatPage() {
 
                     {/* Feedback buttons for assistant messages */}
                     {msg.role === 'assistant' && (
-                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2 mt-5 pt-4 border-t border-[var(--border)]">
                         <button
                           onClick={() => handleFeedback(msg.id, 'up')}
-                          className={`text-xl transition-all duration-200 hover:scale-125 touch-target ${
+                          className={`p-1.5 rounded-sm transition-all duration-200 touch-target ${
                             msg.feedback === 'up'
-                              ? 'opacity-100 scale-125'
-                              : 'opacity-30 hover:opacity-70'
+                              ? 'bg-[var(--accent)] text-white'
+                              : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]'
                           }`}
                           title="Helpful"
                           aria-label="Mark as helpful"
                         >
-                          👍
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                            />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleFeedback(msg.id, 'down')}
-                          className={`text-xl transition-all duration-200 hover:scale-125 touch-target ${
+                          className={`p-1.5 rounded-sm transition-all duration-200 touch-target ${
                             msg.feedback === 'down'
-                              ? 'opacity-100 scale-125'
-                              : 'opacity-30 hover:opacity-70'
+                              ? 'bg-[var(--accent)] text-white'
+                              : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]'
                           }`}
                           title="Not helpful"
                           aria-label="Mark as not helpful"
                         >
-                          👎
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                            />
+                          </svg>
                         </button>
                       </div>
                     )}
@@ -381,14 +459,14 @@ export default function ChatPage() {
               {/* Loading indicator */}
               {sending && (
                 <div className="flex justify-start">
-                  <div className="max-w-[70%] rounded-2xl px-4 py-3 bg-white shadow-md border border-gray-200">
+                  <div className="max-w-[70%] rounded-sm px-4 py-3 bg-[var(--surface-elevated)] shadow-sm border border-[var(--border)]">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
-                      <span className="text-sm text-gray-500">Thinking...</span>
+                      <span className="text-xs text-[var(--text-tertiary)]">Thinking</span>
                     </div>
                   </div>
                 </div>
@@ -401,19 +479,31 @@ export default function ChatPage() {
       </main>
 
       {/* Fixed Bottom Input Area */}
-      <footer className="bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-4 shadow-2xl flex-shrink-0 safe-area-bottom">
+      <footer className="bg-[var(--surface)] border-t border-[var(--border)] px-4 sm:px-6 py-5 flex-shrink-0 safe-area-bottom">
         <div className="max-w-3xl mx-auto">
           {/* Error Message */}
           {error && (
-            <div className="mb-3 p-3 bg-red-50 border-2 border-red-200 rounded-xl fade-in">
-              <div className="flex items-start gap-2">
-                <span className="text-red-500 flex-shrink-0">⚠️</span>
-                <p className="text-red-700 text-sm font-medium">{error}</p>
+            <div className="mb-4 p-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm fade-in">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-4 h-4 text-[var(--text-secondary)] flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-[var(--text-secondary)] text-xs font-medium leading-relaxed">{error}</p>
               </div>
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
+          <form onSubmit={handleSendMessage} className="flex gap-3">
             {/* Text Input */}
             <input
               type="text"
@@ -421,7 +511,7 @@ export default function ChatPage() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Describe symptoms..."
               disabled={sending}
-              className="input-field flex-1 text-base disabled:bg-gray-50"
+              className="input-field flex-1 text-sm disabled:bg-[var(--surface-elevated)]"
               autoComplete="off"
             />
 
@@ -429,18 +519,18 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="px-5 sm:px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 hover:shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 touch-target"
+              className="btn-primary px-4 py-3 flex items-center justify-center gap-2"
             >
               {sending ? (
                 <>
                   <div className="spinner w-4 h-4"></div>
-                  <span className="hidden sm:inline">Sending</span>
+                  <span className="hidden sm:inline text-sm">Sending</span>
                 </>
               ) : (
                 <>
-                  <span className="hidden sm:inline">Send</span>
+                  <span className="hidden sm:inline text-sm">Send</span>
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -448,7 +538,7 @@ export default function ChatPage() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2.5}
+                      strokeWidth={2}
                       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                     />
                   </svg>
@@ -458,8 +548,8 @@ export default function ChatPage() {
           </form>
 
           {/* Helper text */}
-          <p className="text-xs text-gray-500 mt-3 text-center leading-relaxed">
-            AI guidance only • Always consult a vet for serious concerns
+          <p className="text-xs text-[var(--text-tertiary)] mt-4 text-center leading-relaxed">
+            AI guidance only • Always consult a veterinarian for serious concerns
           </p>
         </div>
       </footer>
