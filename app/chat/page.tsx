@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 import { getPetById } from '@/lib/services/pets';
 import {
@@ -20,7 +21,6 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const auth = useRequireAuth();
   const { signOut } = useAuth();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [pet, setPet] = useState<Pet | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -29,15 +29,28 @@ function ChatPageContent() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tickerIndex, setTickerIndex] = useState(0);
 
   const petId = searchParams.get('petId');
   const existingConversationId = searchParams.get('conversationId');
   const user = auth?.user;
 
-  // Scroll to bottom when messages change
+  // Ticker words for loading state
+  const tickerWords = ['Thinking', 'Analyzing', 'Responding', 'Preparing'];
+
+  // Animate ticker when sending
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!sending) {
+      setTickerIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTickerIndex((prev) => (prev + 1) % tickerWords.length);
+    }, 1500); // Change word every 1.5 seconds
+
+    return () => clearInterval(interval);
+  }, [sending, tickerWords.length]);
 
   // Initialize: Fetch pet and create/load conversation
   useEffect(() => {
@@ -402,9 +415,22 @@ function ChatPageContent() {
                         : 'bg-white text-[#073F6C]'
                     }`}
                   >
-                    <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
-                      {msg.content}
-                    </p>
+                    <div className="text-[15px] leading-relaxed prose prose-sm max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="ml-2">{children}</li>,
+                          code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
+                          pre: ({ children }) => <pre className="bg-gray-100 p-2 rounded overflow-x-auto mb-2">{children}</pre>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
                     <p
                       className={`text-xs mt-4 ${
                         msg.role === 'user' ? 'text-gray-500' : 'text-gray-500'
@@ -480,13 +506,13 @@ function ChatPageContent() {
                         <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                         <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
-                      <span className="text-xs text-gray-500">Thinking</span>
+                      <span className="text-xs text-gray-500 min-w-[100px]">
+                        {tickerWords[tickerIndex]}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
-
-              <div ref={messagesEndRef} />
             </>
           )}
         </div>
