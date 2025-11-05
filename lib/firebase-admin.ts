@@ -10,6 +10,14 @@ let adminDb: Firestore;
 /**
  * Initialize Firebase Admin SDK for server-side operations.
  * This should only be used in API routes and server components.
+ *
+ * Development Mode:
+ * - Works without credentials for Firebase Emulator
+ * - Set FIREBASE_AUTH_EMULATOR_HOST and FIRESTORE_EMULATOR_HOST to use emulator
+ *
+ * Production Mode:
+ * - Requires FIREBASE_SERVICE_ACCOUNT_KEY (service account JSON string)
+ * - OR provide just NEXT_PUBLIC_FIREBASE_PROJECT_ID for Cloud Run/App Engine
  */
 function initializeFirebaseAdmin() {
   if (getApps().length > 0) {
@@ -21,35 +29,56 @@ function initializeFirebaseAdmin() {
   }
 
   try {
-    // Option 1: Using service account key file (recommended for development)
-    // If you have a service account JSON file, uncomment the following:
-    // const serviceAccount = require('path/to/serviceAccountKey.json');
-    // adminApp = initializeApp({
-    //   credential: cert(serviceAccount),
-    // });
+    const isEmulator = process.env.FIREBASE_AUTH_EMULATOR_HOST ||
+                       process.env.FIRESTORE_EMULATOR_HOST;
 
-    // Option 2: Using environment variable with service account JSON
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      // Production: Use service account credentials
+      console.log('Initializing Firebase Admin with service account...');
       const serviceAccount = JSON.parse(
         process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       );
       adminApp = initializeApp({
         credential: cert(serviceAccount),
       });
-    } else if (process.env.FIREBASE_PROJECT_ID) {
-      // Option 3: Using default credentials (works in Google Cloud environments)
-      // This will automatically use Application Default Credentials
+    } else if (isEmulator) {
+      // Development: Use emulator (no credentials needed)
+      console.log('Initializing Firebase Admin for emulator...');
+      const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project';
       adminApp = initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID,
+        projectId,
+      });
+      console.log(`Connected to Firebase Emulator (Project: ${projectId})`);
+    } else if (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+      // Cloud environment: Use Application Default Credentials
+      console.log('Initializing Firebase Admin with default credentials...');
+      adminApp = initializeApp({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
     } else {
-      throw new Error(
-        'Firebase Admin initialization failed: Missing FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_PROJECT_ID environment variable'
+      // Fallback: Initialize with minimal config (development only)
+      console.warn(
+        'Warning: Firebase Admin initialized without credentials. ' +
+        'This is OK for development with emulator, but will fail in production. ' +
+        'Set FIREBASE_SERVICE_ACCOUNT_KEY for production use.'
       );
+      adminApp = initializeApp({
+        projectId: 'demo-project',
+      });
     }
 
     adminAuth = getAuth(adminApp);
     adminDb = getFirestore(adminApp);
+
+    // Connect to emulator if environment variables are set
+    if (process.env.FIRESTORE_EMULATOR_HOST) {
+      const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
+      console.log(`Firestore connected to emulator at ${host}:${port}`);
+    }
+
+    if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+      console.log(`Auth connected to emulator at ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
+    }
 
     console.log('Firebase Admin initialized successfully');
   } catch (error) {

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "emulators": "firebase emulators:start",
+    "emulators:export": "firebase emulators:export ./firebase-data",
+    "emulators:import": "firebase emulators:start --import=./firebase-data"
   },
   "dependencies": {
     "firebase": "^12.5.0",
