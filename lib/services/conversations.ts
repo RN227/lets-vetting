@@ -54,11 +54,11 @@ export async function addMessage(
   content: string
 ): Promise<string> {
   try {
-    const messagesRef = collection(db, 'messages');
+    // Use subcollection: conversations/{conversationId}/messages
+    const messagesRef = collection(db, 'conversations', conversationId, 'messages');
 
-    // Prepare the document data
+    // Prepare the document data (no need for conversationId since it's in the path)
     const docData = {
-      conversationId,
       role,
       content,
       feedback: null,
@@ -86,27 +86,26 @@ export async function getConversationMessages(
   conversationId: string
 ): Promise<Message[]> {
   try {
-    const messagesRef = collection(db, 'messages');
+    // Use subcollection: conversations/{conversationId}/messages
+    const messagesRef = collection(db, 'conversations', conversationId, 'messages');
     const q = query(
       messagesRef,
       orderBy('createdAt', 'asc')
     );
     const querySnapshot = await getDocs(q);
 
-    // Filter messages by conversationId and map to Message objects
-    return querySnapshot.docs
-      .map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          conversationId: data.conversationId,
-          role: data.role,
-          content: data.content,
-          feedback: data.feedback,
-          createdAt: data.createdAt?.toDate() || new Date(),
-        } as Message;
-      })
-      .filter((message) => message.conversationId === conversationId);
+    // Map to Message objects (conversationId is in the path)
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        conversationId, // Use the conversationId from the path
+        role: data.role,
+        content: data.content,
+        feedback: data.feedback,
+        createdAt: data.createdAt?.toDate() || new Date(),
+      } as Message;
+    });
   } catch (error) {
     console.error('Error getting conversation messages:', error);
     throw new Error('Failed to fetch messages');
@@ -121,11 +120,13 @@ export async function getConversationMessages(
  * @returns Success boolean
  */
 export async function updateMessageFeedback(
+  conversationId: string,
   messageId: string,
   feedback: 'up' | 'down'
 ): Promise<boolean> {
   try {
-    const messageRef = doc(db, 'messages', messageId);
+    // Use subcollection: conversations/{conversationId}/messages/{messageId}
+    const messageRef = doc(db, 'conversations', conversationId, 'messages', messageId);
 
     // Update the feedback field
     await updateDoc(messageRef, {
@@ -167,11 +168,10 @@ export async function getConversationsForPet(
           createdAt: data.createdAt?.toDate() || new Date(),
         };
 
-        // Get first user message from this conversation
-        const messagesRef = collection(db, 'messages');
+        // Get first user message from this conversation (using subcollection)
+        const messagesRef = collection(db, 'conversations', docSnap.id, 'messages');
         const messagesQuery = query(
           messagesRef,
-          where('conversationId', '==', docSnap.id),
           where('role', '==', 'user'),
           orderBy('createdAt', 'asc'),
           limit(1)

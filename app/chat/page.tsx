@@ -194,6 +194,11 @@ function ChatPageContent() {
   };
 
   const handleFeedback = async (messageId: string, feedback: 'up' | 'down') => {
+    if (!conversationId) {
+      console.error('No conversation ID available for feedback');
+      return;
+    }
+    
     try {
       // Update UI immediately (optimistic update)
       setMessages((prev) =>
@@ -202,8 +207,8 @@ function ChatPageContent() {
         )
       );
 
-      // Update in Firestore
-      await updateMessageFeedback(messageId, feedback);
+      // Update in Firestore (now requires conversationId)
+      await updateMessageFeedback(conversationId, messageId, feedback);
     } catch (err) {
       console.error('Error updating feedback:', err);
       // Revert on error
