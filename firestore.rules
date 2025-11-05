@@ -13,17 +13,38 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Users collection - users can only read/write their own data
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    // Pets collection - users can only access their own pets
+    match /pets/{petId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
 
-      // Pets subcollection - users can only access their own pets
-      match /pets/{petId} {
-        allow read, write: if isOwner(userId);
+    // Conversations collection - users can only access conversations for their pets
+    match /conversations/{conversationId} {
+      allow create: if isAuthenticated() && petBelongsToUser(request.resource.data.petId);
+      allow read, update, delete: if isAuthenticated() && petBelongsToUser(resource.data.petId);
+
+      // Messages subcollection - users can access messages in their conversations
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated() && conversationBelongsToUser(conversationId);
       }
     }
 
-    // Triage sessions - users can only access their own sessions
+    // Helper function to check if a pet belongs to the authenticated user
+    function petBelongsToUser(petId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/pets/$(petId)) &&
+             get(/databases/$(database)/documents/pets/$(petId)).data.userId == request.auth.uid;
+    }
+
+    // Helper function to check if a conversation belongs to the authenticated user
+    function conversationBelongsToUser(conversationId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
+             petBelongsToUser(get(/databases/$(database)/documents/conversations/$(conversationId)).data.petId);
+    }
+
+    // Triage sessions - Legacy support (deprecated)
     match /triageSessions/{sessionId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow read, update: if isAuthenticated() && resource.data.userId == request.auth.uid;
