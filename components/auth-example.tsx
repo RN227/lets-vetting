@@ -19,12 +19,9 @@ export function AuthExample() {
 
   if (!user) {
     return (
-      <div className="p-4 bg-gray-100 rounded-lg">
+      <div className="card">
         <p className="mb-4 text-gray-700">You are not signed in.</p>
-        <button
-          onClick={signInWithGoogle}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
+        <button onClick={signInWithGoogle} className="btn-primary">
           Sign in with Google
         </button>
       </div>
@@ -32,7 +29,7 @@ export function AuthExample() {
   }
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg">
+    <div className="card">
       <div className="mb-4">
         <p className="text-gray-700 mb-2">
           <strong>Signed in as:</strong> {user.displayName || 'No name'}
@@ -46,10 +43,7 @@ export function AuthExample() {
           />
         )}
       </div>
-      <button
-        onClick={signOut}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-      >
+      <button onClick={signOut} className="btn-danger">
         Sign Out
       </button>
     </div>
