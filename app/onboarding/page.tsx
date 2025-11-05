@@ -185,8 +185,8 @@ export default function OnboardingPage() {
   const availableBreeds = formData.species === 'dog' ? DOG_BREEDS : CAT_BREEDS;
 
   return (
-    <div className="min-h-screen bg-[#073F6C] flex items-center justify-center px-4 sm:px-6 py-6">
-      <div className="w-full max-w-2xl">
+    <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 sm:px-6 py-6 overflow-hidden">
+      <div className="w-full max-w-2xl lg:max-w-3xl overflow-y-auto max-h-full">
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-white mb-2">

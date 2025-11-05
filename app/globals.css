@@ -43,6 +43,10 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: fixed;
 }
 
 body {
@@ -55,6 +59,10 @@ body {
   text-rendering: optimizeLegibility;
   line-height: 1.65;
   letter-spacing: -0.011em;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: fixed;
 }
 
 /* Refined scrollbar - Elegant */

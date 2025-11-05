@@ -50,27 +50,113 @@ console.log('🔥 Firebase Config:', {
   hasAppId: !!firebaseConfig.appId,
 });
 
-// Initialize Firebase app (singleton pattern)
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+// Initialize Firebase app (singleton pattern) - lazy initialization
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 
-// Only initialize if Firebase hasn't been initialized yet
-if (!getApps().length) {
-  console.log('🔥 Initializing Firebase app...');
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  console.log('✅ Firebase initialized successfully');
-} else {
-  console.log('🔥 Using existing Firebase app');
-  app = getApps()[0];
-  auth = getAuth(app);
-  db = getFirestore(app);
+// Check if we're in build time (Vercel sets VERCEL_ENV during deployment)
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                     (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV && !process.env.VERCEL_URL);
+
+// Lazy initialization function
+function getFirebaseApp(): FirebaseApp {
+  if (!app) {
+    if (!getApps().length) {
+      // Only initialize if we have required config
+      if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+        // During build time, env vars might not be available
+        // Use placeholder values to allow build to complete
+        if (isBuildTime && typeof window === 'undefined') {
+          console.warn('⚠️ Firebase config missing during build - using placeholder (this is OK)');
+          // Create placeholder app to allow build to complete
+          app = initializeApp({
+            projectId: 'lets-vet-build-placeholder',
+            apiKey: 'AIzaSyBuildPlaceholderKeyForBuildOnly',
+            authDomain: 'lets-vet-build-placeholder.firebaseapp.com',
+            storageBucket: 'lets-vet-build-placeholder.appspot.com',
+            messagingSenderId: '123456789',
+            appId: '1:123456789:web:build-placeholder',
+          }, 'build-placeholder');
+          console.log('⚠️ Firebase initialized with placeholder config (build only)');
+          return app;
+        }
+        // Not build time - throw normally
+        throw new Error('Firebase not configured. Environment variables are required.');
+      }
+      
+      console.log('🔥 Initializing Firebase app...');
+      app = initializeApp(firebaseConfig);
+      console.log('✅ Firebase initialized successfully');
+    } else {
+      console.log('🔥 Using existing Firebase app');
+      app = getApps()[0];
+    }
+  }
+  return app;
 }
 
-// Export Firebase instances
-export { app, auth, db };
+function getFirebaseAuth(): Auth {
+  if (!auth) {
+    const appInstance = getFirebaseApp();
+    auth = getAuth(appInstance);
+  }
+  return auth;
+}
+
+function getFirebaseDb(): Firestore {
+  if (!db) {
+    const appInstance = getFirebaseApp();
+    db = getFirestore(appInstance);
+  }
+  return db;
+}
+
+// Export getter functions that lazily initialize
+export { getFirebaseApp as getApp, getFirebaseAuth as getAuth, getFirebaseDb as getDb };
+
+// Export instances - wrap in try-catch to handle build time gracefully
+// During build, if env vars aren't available, we'll use placeholder values
+let exportedApp: FirebaseApp;
+let exportedAuth: Auth;
+let exportedDb: Firestore;
+
+try {
+  exportedApp = getFirebaseApp();
+  exportedAuth = getFirebaseAuth();
+  exportedDb = getFirebaseDb();
+} catch (error) {
+  // During build time, if Firebase initialization fails, use placeholder
+  // This allows the build to complete, but Firebase won't work until env vars are set
+  if (isBuildTime && typeof window === 'undefined') {
+    console.warn('⚠️ Firebase initialization failed during build - using placeholder (this is OK)');
+    try {
+      // Create placeholder app to allow build to complete
+      exportedApp = initializeApp({
+        projectId: 'lets-vet-build-placeholder',
+        apiKey: 'AIzaSyBuildPlaceholderKeyForBuildOnly',
+        authDomain: 'lets-vet-build-placeholder.firebaseapp.com',
+        storageBucket: 'lets-vet-build-placeholder.appspot.com',
+        messagingSenderId: '123456789',
+        appId: '1:123456789:web:build-placeholder',
+      }, 'build-placeholder');
+      exportedAuth = getAuth(exportedApp);
+      exportedDb = getFirestore(exportedApp);
+      console.log('⚠️ Using placeholder Firebase config for build');
+    } catch (placeholderError) {
+      // If placeholder also fails, re-throw original error
+      console.error('Failed to create placeholder Firebase app:', placeholderError);
+      throw error;
+    }
+  } else {
+    // Not build time - re-throw the error
+    throw error;
+  }
+}
+
+export const app = exportedApp;
+export const auth = exportedAuth;
+export const db = exportedDb;
 
 // Export types for convenience
 export type { Auth, Firestore };

@@ -46,10 +46,10 @@ function HowItWorksPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 pb-24">
+    <div className="h-screen w-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 pb-24 overflow-hidden">
       {/* Header with Logo */}
       <div className="pt-8 mb-10">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <h1 className="text-3xl font-bold text-white">
               How it Works
@@ -65,8 +65,8 @@ function HowItWorksPageContent() {
       </div>
 
       {/* Content Card - Centered Vertically */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-2xl -mt-16">
+      <div className="flex-1 flex items-center justify-center overflow-y-auto">
+        <div className="w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl -mt-16 py-8">
           {/* Content Card */}
           <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md">
             {/* Bullet Points */}
@@ -103,8 +103,8 @@ function HowItWorksPageContent() {
       </div>
       
       {/* Disclaimer - Above CTA */}
-      <div className="fixed bottom-20 left-0 right-0 px-4 sm:px-6">
-        <div className="max-w-2xl mx-auto">
+      <div className="fixed bottom-20 left-0 right-0 px-4 sm:px-6 z-10">
+        <div className="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
             <div className="flex items-start gap-3">
               <svg
@@ -130,7 +130,7 @@ function HowItWorksPageContent() {
 
       {/* Continue Button - Fixed to Bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#073F6C] px-4 sm:px-6 py-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
           <button
             onClick={handleContinue}
             className="w-full px-6 py-3 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md"
@@ -146,7 +146,7 @@ function HowItWorksPageContent() {
 export default function HowItWorksPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-white">Loading...</div>
       </div>
     }>

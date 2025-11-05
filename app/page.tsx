@@ -78,7 +78,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 sm:px-6 bg-[#073F6C] relative">
+    <main className="h-screen w-screen flex items-center justify-center px-4 sm:px-6 bg-[#073F6C] relative overflow-hidden">
       {/* Logo - perfectly centered, moves up when buttons appear */}
       <div 
         className="absolute inset-0 flex items-center justify-center scale-in transition-transform duration-1000 ease-out"
@@ -95,7 +95,7 @@ export default function Home() {
       </div>
 
       {/* Container for buttons and login - positioned below logo */}
-      <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-md px-4" style={{ top: 'calc(50vh + 50px)' }}>
+      <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-md lg:max-w-lg px-4" style={{ top: 'calc(50vh + 50px)' }}>
         {/* Buttons - fade in/out */}
         <div
           className={`w-full space-y-3 transition-opacity duration-500 ${

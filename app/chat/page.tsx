@@ -231,7 +231,7 @@ function ChatPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-4">
             <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
@@ -244,7 +244,7 @@ function ChatPageContent() {
 
   if (error && !pet) {
     return (
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center px-4">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
         <div className="max-w-md w-full bg-white rounded-xl p-8 shadow-md">
           <div className="text-center">
             <h1 className="text-lg font-bold text-[#073F6C] mb-4">Error</h1>
@@ -262,10 +262,10 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#073F6C]">
+    <div className="flex flex-col h-screen w-screen bg-[#073F6C] overflow-hidden">
       {/* Header */}
       <header className="bg-[#073F6C] border-b border-white/10 px-4 sm:px-6 py-4 flex-shrink-0">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between">
           {/* Pet Info */}
           <div className="flex items-center gap-3.5">
             <img
@@ -331,7 +331,7 @@ function ChatPageContent() {
 
       {/* Chat Messages Area */}
       <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-8">
-        <div className="max-w-3xl mx-auto space-y-5">
+        <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-5">
           {messages.length === 0 ? (
             /* Empty state */
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
@@ -366,7 +366,7 @@ function ChatPageContent() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}
                 >
                   <div
-                    className={`max-w-[85%] sm:max-w-[70%] rounded-xl px-5 py-4 shadow-md ${
+                    className={`max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] rounded-xl px-5 py-4 shadow-md ${
                       msg.role === 'user'
                         ? 'bg-white border-2 border-[#073F6C] text-[#073F6C]'
                         : 'bg-white text-[#073F6C]'
@@ -464,7 +464,7 @@ function ChatPageContent() {
 
       {/* Fixed Bottom Input Area */}
       <footer className="bg-[#073F6C] border-t border-white/10 px-4 sm:px-6 py-5 flex-shrink-0 safe-area-bottom">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-4 bg-white/10 border border-white/20 rounded-xl fade-in">
@@ -544,7 +544,7 @@ function ChatPageContent() {
 export default function ChatPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-white">Loading...</div>
       </div>
     }>

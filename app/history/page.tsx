@@ -97,7 +97,7 @@ function HistoryPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-4">
             <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
@@ -110,7 +110,7 @@ function HistoryPageContent() {
 
   if (error || !pet) {
     return (
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center px-4">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
         <div className="max-w-md w-full bg-white rounded-xl p-8 shadow-md">
           <div className="text-center">
             <h1 className="text-lg font-bold text-[#073F6C] mb-4">Error</h1>
@@ -128,10 +128,10 @@ function HistoryPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#073F6C]">
+    <div className="h-screen w-screen bg-[#073F6C] overflow-hidden flex flex-col">
       {/* Header */}
       <header className="bg-[#073F6C] border-b border-white/10 px-4 sm:px-6 py-4 flex-shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-between">
           {/* Pet Info */}
           <div className="flex items-center gap-3.5">
             <img
@@ -170,7 +170,7 @@ function HistoryPageContent() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div className="flex-1 overflow-y-auto max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
         {/* Conversations List */}
         {conversations.length === 0 ? (
@@ -268,7 +268,7 @@ function HistoryPageContent() {
 export default function HistoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-white">Loading...</div>
       </div>
     }>

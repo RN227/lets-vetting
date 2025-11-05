@@ -57,10 +57,12 @@ export function useRequireAuth(): { user: User; loading: boolean } | null {
  */
 export function AuthLoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading...</p>
+        <div className="w-8 h-8 mx-auto mb-4">
+          <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
+        </div>
+        <p className="text-white text-sm">Loading</p>
       </div>
     </div>
   );

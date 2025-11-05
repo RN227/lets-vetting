@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#073F6C]">
+      <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-4">
             <div className="spinner w-full h-full"></div>
@@ -64,8 +64,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#073F6C] px-4 sm:px-6">
-      <div className="w-full max-w-md">
+    <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] px-4 sm:px-6 overflow-hidden">
+      <div className="w-full max-w-md lg:max-w-lg">
         {/* Logo */}
         <div className="text-center mb-12">
           <div className="mb-8 flex justify-center">

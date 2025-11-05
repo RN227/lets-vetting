@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+
+// Force dynamic rendering - prevents Firebase from initializing during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 import { getPetById } from '@/lib/services/pets';
 import { getConversationMessages } from '@/lib/services/conversations';
 
