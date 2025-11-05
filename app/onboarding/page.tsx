@@ -1,34 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 
 export default function OnboardingPage() {
-  const { user, loading } = useAuth();
   const router = useRouter();
+  const auth = useRequireAuth();
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!user && !loading) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+  // Show loading screen while checking auth or redirecting
+  if (!auth) {
+    return <AuthLoadingScreen />;
   }
 
-  if (!user) {
-    return null;
-  }
+  const { user } = auth;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
