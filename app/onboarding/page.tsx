@@ -19,6 +19,7 @@ export default function OnboardingPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   // Show loading screen while checking auth or redirecting
   if (!auth) {
@@ -66,10 +67,15 @@ export default function OnboardingPage() {
       };
 
       // Save to Firestore using the pets service
-      await createPet(user.uid, petData);
+      const newPet = await createPet(user.uid, petData);
 
-      // Redirect to chat
-      router.push('/chat');
+      // Show success message
+      setSuccess(true);
+
+      // Redirect to chat with pet ID
+      setTimeout(() => {
+        router.push(`/chat?petId=${newPet.id}`);
+      }, 1000);
     } catch (err) {
       console.error('Error saving pet:', err);
       setError('Failed to save pet information. Please try again.');
@@ -96,6 +102,16 @@ export default function OnboardingPage() {
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-sm flex items-center gap-2">
+                <span>✓</span>
+                <span>Pet saved successfully! Redirecting to chat...</span>
+              </p>
             </div>
           )}
 
