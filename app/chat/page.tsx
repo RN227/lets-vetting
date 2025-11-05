@@ -30,6 +30,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
 
   const petId = searchParams.get('petId');
+  const existingConversationId = searchParams.get('conversationId');
   const user = auth?.user;
 
   // Scroll to bottom when messages change
@@ -65,13 +66,19 @@ export default function ChatPage() {
 
         setPet(petData);
 
-        // Create a new conversation for this session
-        const newConversationId = await createConversation(petId);
-        setConversationId(newConversationId);
+        // Check if we're loading an existing conversation or creating a new one
+        if (existingConversationId) {
+          // Load existing conversation
+          setConversationId(existingConversationId);
 
-        // Note: For now, each page load creates a new conversation
-        // In a production app, you might want to load the most recent conversation
-        // or allow users to browse conversation history
+          // Load existing messages
+          const existingMessages = await getConversationMessages(existingConversationId);
+          setMessages(existingMessages);
+        } else {
+          // Create a new conversation for this session
+          const newConversationId = await createConversation(petId);
+          setConversationId(newConversationId);
+        }
 
         setLoading(false);
       } catch (err) {
@@ -82,7 +89,7 @@ export default function ChatPage() {
     }
 
     initialize();
-  }, [petId, user?.uid]);
+  }, [petId, existingConversationId, user?.uid]);
 
   const handleSignOut = async () => {
     try {

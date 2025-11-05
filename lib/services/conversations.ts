@@ -5,9 +5,11 @@ import {
   getDocs,
   doc,
   query,
+  where,
   orderBy,
   Timestamp,
   updateDoc,
+  limit,
 } from 'firebase/firestore';
 import type { Conversation, Message } from '@/types';
 
@@ -134,5 +136,60 @@ export async function updateMessageFeedback(
   } catch (error) {
     console.error('Error updating message feedback:', error);
     throw new Error('Failed to update message feedback');
+  }
+}
+
+/**
+ * Get all conversations for a specific pet with first message preview
+ *
+ * @param petId - The ID of the pet
+ * @returns Array of conversations with first user message
+ */
+export async function getConversationsForPet(
+  petId: string
+): Promise<Array<Conversation & { firstMessage?: string }>> {
+  try {
+    const conversationsRef = collection(db, 'conversations');
+    const q = query(
+      conversationsRef,
+      where('petId', '==', petId),
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+
+    // Map conversations and fetch first message for each
+    const conversations = await Promise.all(
+      querySnapshot.docs.map(async (docSnap) => {
+        const data = docSnap.data();
+        const conversation: Conversation & { firstMessage?: string } = {
+          id: docSnap.id,
+          petId: data.petId,
+          createdAt: data.createdAt?.toDate() || new Date(),
+        };
+
+        // Get first user message from this conversation
+        const messagesRef = collection(db, 'messages');
+        const messagesQuery = query(
+          messagesRef,
+          where('conversationId', '==', docSnap.id),
+          where('role', '==', 'user'),
+          orderBy('createdAt', 'asc'),
+          limit(1)
+        );
+        const messagesSnapshot = await getDocs(messagesQuery);
+
+        if (!messagesSnapshot.empty) {
+          const firstMsg = messagesSnapshot.docs[0].data();
+          conversation.firstMessage = firstMsg.content;
+        }
+
+        return conversation;
+      })
+    );
+
+    return conversations;
+  } catch (error) {
+    console.error('Error getting conversations for pet:', error);
+    throw new Error('Failed to fetch conversations');
   }
 }
