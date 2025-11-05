@@ -1,14 +1,12 @@
 'use client';
 
-// Force dynamic rendering - this page requires auth and uses search params
-export const dynamic = 'force-dynamic';
-
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 import { getUserPets } from '@/lib/services/pets';
 import { useEffect } from 'react';
 
-export default function HowItWorksPage() {
+function HowItWorksPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useRequireAuth();
@@ -142,6 +140,18 @@ export default function HowItWorksPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function HowItWorksPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <HowItWorksPageContent />
+    </Suspense>
   );
 }
 

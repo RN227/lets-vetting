@@ -1,8 +1,6 @@
 'use client';
 
-// Force dynamic rendering - this page requires auth and uses search params
-export const dynamic = 'force-dynamic';
-
+import { Suspense } from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
@@ -16,7 +14,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import type { Pet, Message } from '@/types';
 
-export default function ChatPage() {
+function ChatPageContent() {
   // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -540,5 +538,17 @@ export default function ChatPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <ChatPageContent />
+    </Suspense>
   );
 }

@@ -1,8 +1,6 @@
 'use client';
 
-// Force dynamic rendering - this page requires auth and uses search params
-export const dynamic = 'force-dynamic';
-
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
@@ -10,7 +8,7 @@ import { getPetById } from '@/lib/services/pets';
 import { getConversationsForPet } from '@/lib/services/conversations';
 import type { Pet, Conversation } from '@/types';
 
-export default function HistoryPage() {
+function HistoryPageContent() {
   // ALL HOOKS MUST BE CALLED FIRST
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -264,5 +262,17 @@ export default function HistoryPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function HistoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <HistoryPageContent />
+    </Suspense>
   );
 }
