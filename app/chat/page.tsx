@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering - this page requires auth and uses search params
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
