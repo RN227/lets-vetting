@@ -4,9 +4,16 @@ import { getPetById } from '@/lib/services/pets';
 import { getConversationMessages } from '@/lib/services/conversations';
 
 // Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+// Note: We'll initialize it per-request to ensure fresh env vars
+function getAnthropicClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY not configured');
+  }
+  return new Anthropic({
+    apiKey: apiKey.trim(), // Remove any whitespace
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,12 +30,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate API key
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.error('ANTHROPIC_API_KEY not found in environment variables');
       return NextResponse.json(
         { error: 'ANTHROPIC_API_KEY not configured' },
         { status: 500 }
       );
     }
+
+    // Log API key info (without exposing the full key)
+    console.log('Anthropic API Key check:', {
+      exists: !!apiKey,
+      length: apiKey.length,
+      startsWith: apiKey.substring(0, 10),
+    });
 
     // Fetch pet details
     const pet = await getPetById(petId);
@@ -82,6 +98,7 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
     });
 
     // Call Anthropic API
+    const anthropic = getAnthropicClient();
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
@@ -99,8 +116,20 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
     return NextResponse.json({
       response: assistantMessage.text,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in chat API route:', error);
+
+    // Handle Anthropic API authentication errors
+    if (error?.status === 401 || error?.message?.includes('authentication_error') || error?.message?.includes('invalid x-api-key')) {
+      console.error('Anthropic API authentication failed. Check your API key.');
+      return NextResponse.json(
+        { 
+          error: 'Invalid API key. Please check your ANTHROPIC_API_KEY in .env.local',
+          details: 'The API key may be invalid, expired, or incorrectly formatted.'
+        },
+        { status: 401 }
+      );
+    }
 
     // Handle specific error types
     if (error instanceof Error) {

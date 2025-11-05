@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/auth-context';
 import type { Pet, Message } from '@/types';
 
 export default function ChatPage() {
+  // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useRequireAuth();
@@ -27,13 +28,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Show loading screen while checking auth or redirecting
-  if (!auth) {
-    return <AuthLoadingScreen />;
-  }
-
-  const { user } = auth;
   const petId = searchParams.get('petId');
+  const user = auth?.user;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -60,7 +56,7 @@ export default function ChatPage() {
         }
 
         // Verify pet belongs to current user
-        if (petData.userId !== user.uid) {
+        if (user && petData.userId !== user.uid) {
           setError('You do not have access to this pet');
           setLoading(false);
           return;
@@ -85,7 +81,7 @@ export default function ChatPage() {
     }
 
     initialize();
-  }, [petId, user.uid]);
+  }, [petId, user?.uid]);
 
   const handleSignOut = async () => {
     try {
@@ -182,6 +178,11 @@ export default function ChatPage() {
       setSending(false);
     }
   };
+
+  // Show loading screen while checking auth or redirecting
+  if (!auth) {
+    return <AuthLoadingScreen />;
+  }
 
   // Format timestamp for display
   const formatTime = (date: Date) => {
