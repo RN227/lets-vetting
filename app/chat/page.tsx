@@ -229,19 +229,28 @@ export default function ChatPage() {
   };
 
   if (loading) {
-    return <AuthLoadingScreen />;
+    return (
+      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4">
+            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
+          </div>
+          <p className="text-white text-sm">Loading</p>
+        </div>
+      </div>
+    );
   }
 
   if (error && !pet) {
     return (
-      <div className="min-h-screen bg-[var(--surface)] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[var(--surface)] border border-[var(--border)] rounded-sm p-8 shadow-sm">
+      <div className="min-h-screen bg-[#073F6C] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-xl p-8 shadow-md">
           <div className="text-center">
-            <h1 className="text-lg font-medium text-[var(--text-primary)] mb-4">Error</h1>
-            <p className="text-[var(--text-secondary)] text-sm mb-6">{error || 'Pet not found'}</p>
+            <h1 className="text-lg font-bold text-[#073F6C] mb-4">Error</h1>
+            <p className="text-sm text-gray-600 mb-6">{error || 'Pet not found'}</p>
             <button
               onClick={() => router.push('/onboarding')}
-              className="btn-primary"
+              className="w-full px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md"
             >
               Back to Onboarding
             </button>
@@ -252,46 +261,20 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--surface)]">
+    <div className="flex flex-col h-screen bg-[#073F6C]">
       {/* Header */}
-      <header className="bg-[var(--surface)] border-b border-[var(--border)] px-4 sm:px-6 py-4 flex-shrink-0">
+      <header className="bg-[#073F6C] border-b border-white/10 px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Pet Info */}
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-[var(--accent)] rounded-sm flex items-center justify-center flex-shrink-0">
-              {pet?.species === 'dog' ? (
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-              )}
-            </div>
+            <img
+              src="/logo_notext.png"
+              alt="LetsVet Logo"
+              className="w-10 h-10 flex-shrink-0"
+            />
             <div>
-              <h1 className="text-base font-medium text-[var(--text-primary)] leading-tight">{pet?.name}</h1>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-0.5">
+              <h1 className="text-base font-bold text-white leading-tight">{pet?.name}</h1>
+              <p className="text-xs text-white/80 leading-relaxed mt-0.5">
                 {pet?.species.charAt(0).toUpperCase()}
                 {pet?.species.slice(1)} • {pet?.age}{' '}
                 {pet?.age === 1 ? 'year' : 'years'} • {pet?.breed}
@@ -300,14 +283,14 @@ export default function ChatPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 ml-4">
             <button
               onClick={() => router.push(`/history?petId=${petId}`)}
-              className="btn-ghost px-3 py-2 text-xs font-medium flex items-center gap-1.5"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
               title="View history"
             >
               <svg
-                className="w-4 h-4"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -319,16 +302,15 @@ export default function ChatPage() {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span className="hidden sm:inline">History</span>
+              <span className="text-[10px] font-bold uppercase leading-tight">History</span>
             </button>
             <button
               onClick={handleSignOut}
-              className="btn-ghost px-3 py-2 text-xs font-medium"
+              className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
               title="Sign out"
             >
-              <span className="hidden sm:inline">Sign Out</span>
               <svg
-                className="w-4 h-4 sm:hidden"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -340,20 +322,21 @@ export default function ChatPage() {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
+              <span className="text-[10px] font-bold uppercase leading-tight">Sign Out</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Chat Messages Area */}
-      <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-10">
+      <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-8">
         <div className="max-w-3xl mx-auto space-y-5">
           {messages.length === 0 ? (
             /* Empty state */
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
-              <div className="w-14 h-14 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm flex items-center justify-center mb-8">
+              <div className="w-14 h-14 bg-white/10 border-2 border-white/20 rounded-xl flex items-center justify-center mb-8">
                 <svg
-                  className="w-7 h-7 text-[var(--text-secondary)]"
+                  className="w-7 h-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -366,10 +349,10 @@ export default function ChatPage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-light text-[var(--text-primary)] mb-3">
+              <h2 className="text-xl font-bold text-white mb-3">
                 Start a conversation
               </h2>
-              <p className="text-sm text-[var(--text-secondary)] max-w-md leading-relaxed">
+              <p className="text-sm text-white/80 max-w-md leading-relaxed">
                 Describe any symptoms or health concerns about {pet?.name}, and I&apos;ll provide guidance on the best course of action.
               </p>
             </div>
@@ -382,10 +365,10 @@ export default function ChatPage() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}
                 >
                   <div
-                    className={`max-w-[85%] sm:max-w-[70%] ${
+                    className={`max-w-[85%] sm:max-w-[70%] rounded-xl px-5 py-4 shadow-md ${
                       msg.role === 'user'
-                        ? 'chat-bubble-user'
-                        : 'chat-bubble-assistant'
+                        ? 'bg-white border-2 border-[#073F6C] text-[#073F6C]'
+                        : 'bg-white text-[#073F6C]'
                     }`}
                   >
                     <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
@@ -393,7 +376,7 @@ export default function ChatPage() {
                     </p>
                     <p
                       className={`text-xs mt-4 ${
-                        msg.role === 'user' ? 'text-white/70' : 'text-[var(--text-tertiary)]'
+                        msg.role === 'user' ? 'text-gray-500' : 'text-gray-500'
                       }`}
                     >
                       {formatTime(msg.createdAt)}
@@ -401,13 +384,13 @@ export default function ChatPage() {
 
                     {/* Feedback buttons for assistant messages */}
                     {msg.role === 'assistant' && (
-                      <div className="flex items-center gap-2 mt-5 pt-4 border-t border-[var(--border)]">
+                      <div className="flex items-center gap-2 mt-5 pt-4 border-t border-gray-200">
                         <button
                           onClick={() => handleFeedback(msg.id, 'up')}
-                          className={`p-1.5 rounded-sm transition-all duration-200 touch-target ${
+                          className={`p-2 rounded-xl transition-all duration-200 touch-target ${
                             msg.feedback === 'up'
-                              ? 'bg-[var(--accent)] text-white'
-                              : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]'
+                              ? 'bg-[#073F6C] text-white'
+                              : 'text-gray-500 hover:bg-gray-100'
                           }`}
                           title="Helpful"
                           aria-label="Mark as helpful"
@@ -428,10 +411,10 @@ export default function ChatPage() {
                         </button>
                         <button
                           onClick={() => handleFeedback(msg.id, 'down')}
-                          className={`p-1.5 rounded-sm transition-all duration-200 touch-target ${
+                          className={`p-2 rounded-xl transition-all duration-200 touch-target ${
                             msg.feedback === 'down'
-                              ? 'bg-[var(--accent)] text-white'
-                              : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]'
+                              ? 'bg-[#073F6C] text-white'
+                              : 'text-gray-500 hover:bg-gray-100'
                           }`}
                           title="Not helpful"
                           aria-label="Mark as not helpful"
@@ -459,14 +442,14 @@ export default function ChatPage() {
               {/* Loading indicator */}
               {sending && (
                 <div className="flex justify-start">
-                  <div className="max-w-[70%] rounded-sm px-4 py-3 bg-[var(--surface-elevated)] shadow-sm border border-[var(--border)]">
+                  <div className="max-w-[70%] rounded-xl px-5 py-4 bg-white shadow-md">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-[var(--text-tertiary)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
-                      <span className="text-xs text-[var(--text-tertiary)]">Thinking</span>
+                      <span className="text-xs text-gray-500">Thinking</span>
                     </div>
                   </div>
                 </div>
@@ -479,14 +462,14 @@ export default function ChatPage() {
       </main>
 
       {/* Fixed Bottom Input Area */}
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)] px-4 sm:px-6 py-5 flex-shrink-0 safe-area-bottom">
+      <footer className="bg-[#073F6C] border-t border-white/10 px-4 sm:px-6 py-5 flex-shrink-0 safe-area-bottom">
         <div className="max-w-3xl mx-auto">
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-sm fade-in">
+            <div className="mb-4 p-4 bg-white/10 border border-white/20 rounded-xl fade-in">
               <div className="flex items-start gap-3">
                 <svg
-                  className="w-4 h-4 text-[var(--text-secondary)] flex-shrink-0 mt-0.5"
+                  className="w-4 h-4 text-white flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -498,7 +481,7 @@ export default function ChatPage() {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-[var(--text-secondary)] text-xs font-medium leading-relaxed">{error}</p>
+                <p className="text-white text-xs font-medium leading-relaxed">{error}</p>
               </div>
             </div>
           )}
@@ -511,7 +494,7 @@ export default function ChatPage() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Describe symptoms..."
               disabled={sending}
-              className="input-field flex-1 text-sm disabled:bg-[var(--surface-elevated)]"
+              className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
               autoComplete="off"
             />
 
@@ -519,16 +502,16 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="btn-primary px-4 py-3 flex items-center justify-center gap-2"
+              className="px-6 py-3 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
               {sending ? (
                 <>
-                  <div className="spinner w-4 h-4"></div>
-                  <span className="hidden sm:inline text-sm">Sending</span>
+                  <div className="spinner w-4 h-4 border-2 border-[#073F6C] border-t-transparent"></div>
+                  <span className="hidden sm:inline">Sending</span>
                 </>
               ) : (
                 <>
-                  <span className="hidden sm:inline text-sm">Send</span>
+                  <span className="hidden sm:inline">Send</span>
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -548,7 +531,7 @@ export default function ChatPage() {
           </form>
 
           {/* Helper text */}
-          <p className="text-xs text-[var(--text-tertiary)] mt-4 text-center leading-relaxed">
+          <p className="text-xs text-white/70 mt-4 text-center leading-relaxed">
             AI guidance only • Always consult a veterinarian for serious concerns
           </p>
         </div>
