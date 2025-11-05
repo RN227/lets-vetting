@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { getUserPets } from '@/lib/services/pets';
 
 export default function LoginPage() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -10,12 +11,31 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect to onboarding if user is already signed in
+  // Redirect based on whether user has pets
   useEffect(() => {
-    if (user && !loading) {
-      setIsSigningIn(false); // Reset signing in state
-      router.push('/onboarding');
+    async function checkUserPets() {
+      if (user && !loading) {
+        setIsSigningIn(false); // Reset signing in state
+        try {
+          // Check if user has any pets
+          const pets = await getUserPets(user.uid);
+
+          if (pets.length > 0) {
+            // User has pets, redirect to chat with first pet
+            router.push(`/chat?petId=${pets[0].id}`);
+          } else {
+            // No pets, redirect to onboarding
+            router.push('/onboarding');
+          }
+        } catch (err) {
+          console.error('Error checking user pets:', err);
+          // On error, default to onboarding
+          router.push('/onboarding');
+        }
+      }
     }
+
+    checkUserPets();
   }, [user, loading, router]);
 
   const handleSignIn = async () => {

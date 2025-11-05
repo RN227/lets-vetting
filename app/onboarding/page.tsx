@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
-import { createPet } from '@/lib/services/pets';
+import { createPet, getUserPets } from '@/lib/services/pets';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -27,6 +27,24 @@ export default function OnboardingPage() {
   }
 
   const { user } = auth;
+
+  // Redirect to chat if user already has pets
+  useEffect(() => {
+    async function checkExistingPets() {
+      try {
+        const pets = await getUserPets(user.uid);
+        if (pets.length > 0) {
+          // User already has pets, redirect to chat with first pet
+          router.push(`/chat?petId=${pets[0].id}`);
+        }
+      } catch (err) {
+        console.error('Error checking existing pets:', err);
+        // On error, allow user to stay on onboarding
+      }
+    }
+
+    checkExistingPets();
+  }, [user.uid, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
