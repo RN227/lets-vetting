@@ -145,6 +145,7 @@ function ChatPageContent() {
       );
 
       // 3. Call the API to get AI response
+      // Pass pet data to avoid server-side Firestore auth issues
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -154,6 +155,13 @@ function ChatPageContent() {
           petId,
           conversationId: currentConversationId,
           userMessage,
+          pet: {
+            name: pet.name,
+            species: pet.species,
+            age: pet.age,
+            breed: pet.breed,
+            weight: pet.weight,
+          },
         }),
       });
 

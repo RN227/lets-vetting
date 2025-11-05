@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { petId, conversationId, userMessage } = body;
+    const { petId, conversationId, userMessage, pet: petData } = body;
 
     // Validate input
     if (!petId || !conversationId || !userMessage) {
@@ -32,6 +32,29 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields: petId, conversationId, userMessage' },
         { status: 400 }
       );
+    }
+
+    // Validate pet data (either passed from client or fetch from Firestore)
+    let pet: { name: string; species: string; age: number; breed: string; weight: number };
+    if (petData) {
+      // Use pet data passed from client (preferred to avoid server-side Firestore auth)
+      pet = petData;
+    } else {
+      // Fallback: try to fetch from Firestore (requires auth context)
+      const fetchedPet = await getPetById(petId);
+      if (!fetchedPet) {
+        return NextResponse.json(
+          { error: 'Pet not found' },
+          { status: 404 }
+        );
+      }
+      pet = {
+        name: fetchedPet.name,
+        species: fetchedPet.species,
+        age: fetchedPet.age,
+        breed: fetchedPet.breed,
+        weight: fetchedPet.weight,
+      };
     }
 
     // Validate API key
@@ -50,15 +73,6 @@ export async function POST(request: NextRequest) {
       length: apiKey.length,
       startsWith: apiKey.substring(0, 10),
     });
-
-    // Fetch pet details
-    const pet = await getPetById(petId);
-    if (!pet) {
-      return NextResponse.json(
-        { error: 'Pet not found' },
-        { status: 404 }
-      );
-    }
 
     // Fetch conversation history
     const messages = await getConversationMessages(conversationId);
