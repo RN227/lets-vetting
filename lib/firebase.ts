@@ -51,9 +51,9 @@ console.log('🔥 Firebase Config:', {
 });
 
 // Initialize Firebase app (singleton pattern) - lazy initialization
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
+let firebaseApp: FirebaseApp | null = null;
+let firebaseAuth: Auth | null = null;
+let firebaseDb: Firestore | null = null;
 
 // Check if we're in build time (Vercel sets VERCEL_ENV during deployment)
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
@@ -61,7 +61,7 @@ const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
 
 // Lazy initialization function
 function getFirebaseApp(): FirebaseApp {
-  if (!app) {
+  if (!firebaseApp) {
     if (!getApps().length) {
       // Only initialize if we have required config
       if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
@@ -70,7 +70,7 @@ function getFirebaseApp(): FirebaseApp {
         if (isBuildTime && typeof window === 'undefined') {
           console.warn('⚠️ Firebase config missing during build - using placeholder (this is OK)');
           // Create placeholder app to allow build to complete
-          app = initializeApp({
+          firebaseApp = initializeApp({
             projectId: 'lets-vet-build-placeholder',
             apiKey: 'AIzaSyBuildPlaceholderKeyForBuildOnly',
             authDomain: 'lets-vet-build-placeholder.firebaseapp.com',
@@ -79,37 +79,37 @@ function getFirebaseApp(): FirebaseApp {
             appId: '1:123456789:web:build-placeholder',
           }, 'build-placeholder');
           console.log('⚠️ Firebase initialized with placeholder config (build only)');
-          return app;
+          return firebaseApp;
         }
         // Not build time - throw normally
         throw new Error('Firebase not configured. Environment variables are required.');
       }
       
       console.log('🔥 Initializing Firebase app...');
-      app = initializeApp(firebaseConfig);
+      firebaseApp = initializeApp(firebaseConfig);
       console.log('✅ Firebase initialized successfully');
     } else {
       console.log('🔥 Using existing Firebase app');
-      app = getApps()[0];
+      firebaseApp = getApps()[0];
     }
   }
-  return app;
+  return firebaseApp;
 }
 
 function getFirebaseAuth(): Auth {
-  if (!auth) {
+  if (!firebaseAuth) {
     const appInstance = getFirebaseApp();
-    auth = getAuth(appInstance);
+    firebaseAuth = getAuth(appInstance);
   }
-  return auth;
+  return firebaseAuth;
 }
 
 function getFirebaseDb(): Firestore {
-  if (!db) {
+  if (!firebaseDb) {
     const appInstance = getFirebaseApp();
-    db = getFirestore(appInstance);
+    firebaseDb = getFirestore(appInstance);
   }
-  return db;
+  return firebaseDb;
 }
 
 // Export getter functions that lazily initialize
