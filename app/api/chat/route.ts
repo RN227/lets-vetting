@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { petId, conversationId, userMessage, pet: petData } = body;
+    const { petId, conversationId, userMessage, pet: petData, messages: messagesData } = body;
 
     // Validate input
     if (!petId || !conversationId || !userMessage) {
@@ -74,8 +74,19 @@ export async function POST(request: NextRequest) {
       startsWith: apiKey.substring(0, 10),
     });
 
-    // Fetch conversation history
-    const messages = await getConversationMessages(conversationId);
+    // Get conversation history (either passed from client or fetch from Firestore)
+    let messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+    if (messagesData && Array.isArray(messagesData)) {
+      // Use messages passed from client (preferred to avoid server-side Firestore auth)
+      messages = messagesData;
+    } else {
+      // Fallback: try to fetch from Firestore (requires auth context)
+      const fetchedMessages = await getConversationMessages(conversationId);
+      messages = fetchedMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+    }
 
     // Build system prompt with pet details and disclaimer
     const systemPrompt = `You are a helpful veterinary information assistant for LetsVet, a pet health triage application. Your role is to provide educational information and guidance about pet health concerns.

@@ -145,7 +145,16 @@ function ChatPageContent() {
       );
 
       // 3. Call the API to get AI response
-      // Pass pet data to avoid server-side Firestore auth issues
+      // Pass pet data and messages to avoid server-side Firestore auth issues
+      // Format messages for API (only include role and content)
+      // Exclude the temp message we just added (it hasn't been saved to Firestore yet)
+      const conversationHistory = messages
+        .filter((msg) => msg.id !== tempUserMessage.id) // Exclude the temp message
+        .map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -162,6 +171,7 @@ function ChatPageContent() {
             breed: pet.breed,
             weight: pet.weight,
           },
+          messages: conversationHistory,
         }),
       });
 
