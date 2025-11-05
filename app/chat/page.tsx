@@ -266,13 +266,34 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Sign Out Button */}
-          <button
-            onClick={handleSignOut}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-          >
-            Sign Out
-          </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push(`/history?petId=${petId}`)}
+              className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 flex items-center gap-2"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              History
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
