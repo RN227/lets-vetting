@@ -325,16 +325,16 @@ export default function ChatPage() {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[85%] sm:max-w-[70%] ${
                       msg.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-900 shadow-md border border-gray-200'
+                        ? 'chat-bubble-user'
+                        : 'chat-bubble-assistant'
                     }`}
                   >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>
                     <p
@@ -347,26 +347,28 @@ export default function ChatPage() {
 
                     {/* Feedback buttons for assistant messages */}
                     {msg.role === 'assistant' && (
-                      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
                         <button
                           onClick={() => handleFeedback(msg.id, 'up')}
-                          className={`text-lg transition-all duration-200 hover:scale-110 ${
+                          className={`text-xl transition-all duration-200 hover:scale-125 touch-target ${
                             msg.feedback === 'up'
-                              ? 'opacity-100 scale-110'
-                              : 'opacity-40 hover:opacity-70'
+                              ? 'opacity-100 scale-125'
+                              : 'opacity-30 hover:opacity-70'
                           }`}
                           title="Helpful"
+                          aria-label="Mark as helpful"
                         >
                           👍
                         </button>
                         <button
                           onClick={() => handleFeedback(msg.id, 'down')}
-                          className={`text-lg transition-all duration-200 hover:scale-110 ${
+                          className={`text-xl transition-all duration-200 hover:scale-125 touch-target ${
                             msg.feedback === 'down'
-                              ? 'opacity-100 scale-110'
-                              : 'opacity-40 hover:opacity-70'
+                              ? 'opacity-100 scale-125'
+                              : 'opacity-30 hover:opacity-70'
                           }`}
                           title="Not helpful"
+                          aria-label="Mark as not helpful"
                         >
                           👎
                         </button>
@@ -399,55 +401,65 @@ export default function ChatPage() {
       </main>
 
       {/* Fixed Bottom Input Area */}
-      <footer className="bg-white border-t border-gray-200 px-4 py-4 shadow-lg flex-shrink-0">
+      <footer className="bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-4 shadow-2xl flex-shrink-0 safe-area-bottom">
         <div className="max-w-3xl mx-auto">
           {/* Error Message */}
           {error && (
-            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
+            <div className="mb-3 p-3 bg-red-50 border-2 border-red-200 rounded-xl fade-in">
+              <div className="flex items-start gap-2">
+                <span className="text-red-500 flex-shrink-0">⚠️</span>
+                <p className="text-red-700 text-sm font-medium">{error}</p>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-3">
+          <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
             {/* Text Input */}
             <input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe your pet's symptoms..."
+              placeholder="Describe symptoms..."
               disabled={sending}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="input-field flex-1 text-base disabled:bg-gray-50"
+              autoComplete="off"
             />
 
             {/* Send Button */}
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 sm:px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 hover:shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 touch-target"
             >
-              <span>{sending ? 'Sending...' : 'Send'}</span>
-              {!sending && (
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                  />
-                </svg>
+              {sending ? (
+                <>
+                  <div className="spinner w-4 h-4"></div>
+                  <span className="hidden sm:inline">Sending</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Send</span>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
+                  </svg>
+                </>
               )}
             </button>
           </form>
 
           {/* Helper text */}
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            This AI assistant provides general guidance. Always consult a veterinarian for
-            serious concerns.
+          <p className="text-xs text-gray-500 mt-3 text-center leading-relaxed">
+            AI guidance only • Always consult a vet for serious concerns
           </p>
         </div>
       </footer>
