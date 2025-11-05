@@ -152,9 +152,13 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
     // Handle Anthropic API authentication errors
     if (error?.status === 401 || error?.message?.includes('authentication_error') || error?.message?.includes('invalid x-api-key')) {
       console.error('Anthropic API authentication failed. Check your API key.');
+      const isProduction = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+      const errorMessage = isProduction
+        ? 'Invalid API key. Please check your ANTHROPIC_API_KEY environment variable in Vercel dashboard.'
+        : 'Invalid API key. Please check your ANTHROPIC_API_KEY in .env.local';
       return NextResponse.json(
         { 
-          error: 'Invalid API key. Please check your ANTHROPIC_API_KEY in .env.local',
+          error: errorMessage,
           details: 'The API key may be invalid, expired, or incorrectly formatted.'
         },
         { status: 401 }
