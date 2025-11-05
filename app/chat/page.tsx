@@ -66,7 +66,7 @@ export default function ChatPage() {
 
         setPet(petData);
 
-        // Check if we're loading an existing conversation or creating a new one
+        // Check if we're loading an existing conversation
         if (existingConversationId) {
           // Load existing conversation
           setConversationId(existingConversationId);
@@ -74,11 +74,9 @@ export default function ChatPage() {
           // Load existing messages
           const existingMessages = await getConversationMessages(existingConversationId);
           setMessages(existingMessages);
-        } else {
-          // Create a new conversation for this session
-          const newConversationId = await createConversation(petId);
-          setConversationId(newConversationId);
         }
+        // Note: If no conversationId, we don't create one yet.
+        // Conversation will be created when user sends first message.
 
         setLoading(false);
       } catch (err) {
@@ -102,7 +100,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !petId || !conversationId || !pet) return;
+    if (!message.trim() || !petId || !pet) return;
 
     const userMessage = message.trim();
     setMessage('');
@@ -110,10 +108,17 @@ export default function ChatPage() {
     setError(null);
 
     try {
+      // Create conversation if it doesn't exist yet (first message)
+      let currentConversationId = conversationId;
+      if (!currentConversationId) {
+        currentConversationId = await createConversation(petId);
+        setConversationId(currentConversationId);
+      }
+
       // 1. Add user message to UI immediately
       const tempUserMessage: Message = {
         id: `temp-${Date.now()}`,
-        conversationId,
+        conversationId: currentConversationId,
         role: 'user',
         content: userMessage,
         feedback: null,
@@ -122,7 +127,7 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, tempUserMessage]);
 
       // 2. Save user message to Firestore
-      const userMessageId = await addMessage(conversationId, 'user', userMessage);
+      const userMessageId = await addMessage(currentConversationId, 'user', userMessage);
 
       // Update the temp message with real id
       setMessages((prev) =>
@@ -139,7 +144,7 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           petId,
-          conversationId,
+          conversationId: currentConversationId,
           userMessage,
         }),
       });
@@ -155,7 +160,7 @@ export default function ChatPage() {
       // 4. Add AI response to UI
       const tempAssistantMessage: Message = {
         id: `temp-${Date.now()}`,
-        conversationId,
+        conversationId: currentConversationId,
         role: 'assistant',
         content: assistantResponse,
         feedback: null,
@@ -165,7 +170,7 @@ export default function ChatPage() {
 
       // 5. Save AI response to Firestore
       const assistantMessageId = await addMessage(
-        conversationId,
+        currentConversationId,
         'assistant',
         assistantResponse
       );

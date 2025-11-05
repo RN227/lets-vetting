@@ -51,7 +51,12 @@ export default function HistoryPage() {
 
         // Fetch conversations
         const conversationsData = await getConversationsForPet(petId);
-        setConversations(conversationsData);
+
+        // Filter out conversations with no messages
+        const conversationsWithMessages = conversationsData.filter(
+          (conv) => conv.firstMessage && conv.firstMessage.trim().length > 0
+        );
+        setConversations(conversationsWithMessages);
 
         setLoading(false);
       } catch (err) {
