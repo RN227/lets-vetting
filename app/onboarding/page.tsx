@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import type { CreatePetInput } from '@/types';
+import { createPet } from '@/lib/services/pets';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -58,20 +56,17 @@ export default function OnboardingPage() {
     try {
       setLoading(true);
 
-      // Prepare pet data
-      const petData: Omit<CreatePetInput, 'userId'> & { userId: string; createdAt: any } = {
-        userId: user.uid,
+      // Prepare pet data (without id, userId, createdAt)
+      const petData = {
         name: formData.name.trim(),
         species: formData.species as 'dog' | 'cat',
         age: Number(formData.age),
         breed: formData.breed.trim(),
         weight: Number(formData.weight),
-        createdAt: Timestamp.now(),
       };
 
-      // Save to Firestore
-      const petsRef = collection(db, 'pets');
-      await addDoc(petsRef, petData);
+      // Save to Firestore using the pets service
+      await createPet(user.uid, petData);
 
       // Redirect to chat
       router.push('/chat');
