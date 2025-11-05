@@ -21,18 +21,13 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Show loading screen while checking auth or redirecting
-  if (!auth) {
-    return <AuthLoadingScreen />;
-  }
-
-  const { user } = auth;
-
   // Redirect to chat if user already has pets
   useEffect(() => {
     async function checkExistingPets() {
+      if (!auth?.user) return;
+
       try {
-        const pets = await getUserPets(user.uid);
+        const pets = await getUserPets(auth.user.uid);
         if (pets.length > 0) {
           // User already has pets, redirect to chat with first pet
           router.push(`/chat?petId=${pets[0].id}`);
@@ -44,7 +39,14 @@ export default function OnboardingPage() {
     }
 
     checkExistingPets();
-  }, [user.uid, router]);
+  }, [auth?.user?.uid, router]);
+
+  // Show loading screen while checking auth or redirecting
+  if (!auth) {
+    return <AuthLoadingScreen />;
+  }
+
+  const { user } = auth;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
