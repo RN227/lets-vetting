@@ -13,6 +13,7 @@ export default function LoginPage() {
   // Redirect to onboarding if user is already signed in
   useEffect(() => {
     if (user && !loading) {
+      setIsSigningIn(false); // Reset signing in state
       router.push('/onboarding');
     }
   }, [user, loading, router]);
@@ -23,9 +24,11 @@ export default function LoginPage() {
       setError(null);
       await signInWithGoogle();
       // Redirect will happen automatically via useEffect when user state updates
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign in error:', err);
-      setError('Failed to sign in. Please try again.');
+      // Show more specific error messages
+      const errorMessage = err?.message || 'Failed to sign in. Please try again.';
+      setError(errorMessage);
       setIsSigningIn(false);
     }
   };
@@ -124,7 +127,7 @@ export default function LoginPage() {
         {/* Additional Info */}
         <div className="mt-8 text-center">
           <p className="text-gray-600 text-sm">
-            Get instant AI-powered guidance for your pet's health concerns
+            Get instant AI-powered guidance for your pet&apos;s health concerns
           </p>
         </div>
       </div>

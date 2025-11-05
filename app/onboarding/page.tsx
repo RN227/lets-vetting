@@ -92,7 +92,7 @@ export default function OnboardingPage() {
             🐾 Tell us about your pet
           </h1>
           <p className="text-gray-600">
-            Let's get to know your furry friend!
+            Let&apos;s get to know your furry friend!
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function OnboardingPage() {
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Pet's Name *
+              Pet&apos;s Name *
             </label>
             <input
               type="text"

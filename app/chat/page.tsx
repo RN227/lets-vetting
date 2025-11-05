@@ -25,12 +25,12 @@ export default function ChatPage() {
 
           <div className="p-6 bg-blue-50 rounded-lg">
             <p className="text-gray-700">
-              This is the chat page where you'll be able to:
+              This is the chat page where you&apos;ll be able to:
             </p>
             <ul className="mt-4 space-y-2 text-gray-600 text-left max-w-md mx-auto">
               <li className="flex items-start gap-2">
                 <span className="text-green-500">✓</span>
-                <span>Chat with AI about your pet's health</span>
+                <span>Chat with AI about your pet&apos;s health</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500">✓</span>

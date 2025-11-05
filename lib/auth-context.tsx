@@ -27,28 +27,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔐 Setting up auth state listener...');
+    
     // Set up Firebase Auth state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('✅ Auth state: User signed in', {
+          email: user.email,
+          uid: user.uid,
+          displayName: user.displayName,
+        });
+      } else {
+        console.log('❌ Auth state: No user signed in');
+      }
+      
       setUser(user);
       setLoading(false);
     });
 
     // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      console.log('🔐 Cleaning up auth state listener');
+      unsubscribe();
+    };
   }, []);
 
-  // Sign in with Google
+  // Sign in with Google using popup (more reliable than redirect)
   const signInWithGoogle = async () => {
     try {
+      console.log('🔐 Starting Google sign-in with popup...');
       setLoading(true);
+      
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      
+      // Add custom parameters
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      // Use popup instead of redirect for better reliability
+      const result = await signInWithPopup(auth, provider);
+      
+      console.log('✅ Sign-in successful!', {
+        email: result.user.email,
+        uid: result.user.uid,
+        displayName: result.user.displayName,
+      });
+      
       // User state will be updated by onAuthStateChanged listener
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
-      throw error;
-    } finally {
+      // Don't manually set user here to avoid race conditions
+    } catch (error: any) {
+      console.error('❌ Error during Google sign-in:', error);
+      
+      // Provide helpful error messages
+      if (error?.code === 'auth/popup-closed-by-user') {
+        console.log('ℹ️ Sign-in cancelled by user');
+      } else if (error?.code === 'auth/popup-blocked') {
+        console.warn('⚠️ Popup was blocked. Please allow popups for this site.');
+      } else if (error?.message?.includes('ERR_BLOCKED_BY_CLIENT') || 
+                 error?.message?.includes('blocked') ||
+                 error?.code === 'auth/network-request-failed') {
+        console.warn(
+          '⚠️ Sign-in may be blocked by an ad blocker or privacy extension. ' +
+          'Please whitelist this site or disable extensions for localhost.'
+        );
+      }
+      
       setLoading(false);
+      throw error;
     }
   };
 
@@ -58,11 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       await firebaseSignOut(auth);
       // User state will be updated by onAuthStateChanged listener
+      // Don't set loading to false here - let onAuthStateChanged handle it
     } catch (error) {
       console.error('Error signing out:', error);
+      setLoading(false); // Only set to false on error
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
