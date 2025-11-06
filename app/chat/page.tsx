@@ -193,9 +193,13 @@ function ChatPageContent() {
   const handlePillClick = (pill: string) => {
     // Autofill the input with the pill text, overwriting any existing content
     setMessage(pill);
-    // Focus the textarea so user can edit or just send
+    // Focus the textarea and select all text so user can see it was replaced
+    // User can immediately start typing to change it or just send
     setTimeout(() => {
-      textareaRef.current?.focus();
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.select();
+      }
     }, 0);
   };
 
