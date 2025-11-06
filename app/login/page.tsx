@@ -10,11 +10,20 @@ export default function LoginPage() {
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     async function checkUserPets() {
-      if (user && !loading && !user.isAnonymous) {
-        setIsSigningIn(false);
+      // Only redirect if user is authenticated, not anonymous, auth is not loading, and we haven't redirected yet
+      if (user && !loading && !user.isAnonymous && !hasRedirected) {
+        // Reset signing in state when user is authenticated
+        if (isSigningIn) {
+          setIsSigningIn(false);
+        }
+        
+        // Mark as redirected to prevent multiple redirects
+        setHasRedirected(true);
+        
         try {
           const pets = await getUserPets(user.uid);
 
@@ -31,7 +40,7 @@ export default function LoginPage() {
     }
 
     checkUserPets();
-  }, [user, loading, router]);
+  }, [user, loading, router, isSigningIn, hasRedirected]);
 
   const handleSignIn = async () => {
     try {
@@ -48,9 +57,16 @@ export default function LoginPage() {
         // The user.uid stays the same, so all data is already linked
         // No need to migrate data - Firebase handles it automatically
         console.log('Anonymous account upgraded successfully');
+        
+        // Reset signing in state - the useEffect will handle redirect
+        // Don't set it to false immediately as we want to wait for auth state to update
+        // The useEffect will handle it when user state updates
       } else {
         // Regular sign in for new users
         await signInWithGoogle();
+        
+        // Reset signing in state - the useEffect will handle redirect
+        // Don't set it to false immediately as we want to wait for auth state to update
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
