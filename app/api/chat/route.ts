@@ -61,19 +61,11 @@ export async function POST(request: NextRequest) {
     // Validate API key
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      console.error('ANTHROPIC_API_KEY not found in environment variables');
       return NextResponse.json(
         { error: 'ANTHROPIC_API_KEY not configured' },
         { status: 500 }
       );
     }
-
-    // Log API key info (without exposing the full key)
-    console.log('Anthropic API Key check:', {
-      exists: !!apiKey,
-      length: apiKey.length,
-      startsWith: apiKey.substring(0, 10),
-    });
 
     // Get conversation history (either passed from client or fetch from Firestore)
     let messages: Array<{ role: 'user' | 'assistant'; content: string }>;

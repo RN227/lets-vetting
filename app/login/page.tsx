@@ -23,13 +23,6 @@ function LoginPageContent() {
       // Only redirect if user is authenticated, not anonymous, and we haven't redirected yet
       // Don't check loading state here as it might not reset properly after upgrade
       if (user && !user.isAnonymous && !hasRedirected) {
-        console.log('Redirecting after sign-in:', { 
-          uid: user.uid, 
-          email: user.email, 
-          isAnonymous: user.isAnonymous,
-          loading: loading 
-        });
-        
         // Reset signing in state when user is authenticated
         if (isSigningIn) {
           setIsSigningIn(false);
@@ -40,7 +33,6 @@ function LoginPageContent() {
         
         try {
           const pets = await getUserPets(user.uid);
-          console.log('Found pets after sign-in:', pets.length);
 
           if (pets.length > 0) {
             // Use petId from URL if provided and valid, otherwise use first pet
@@ -52,14 +44,12 @@ function LoginPageContent() {
               redirectUrl += `&conversationId=${urlConversationId}`;
             }
             
-            console.log('Redirecting to:', redirectUrl);
             // Use replace to avoid adding to history
             router.replace(redirectUrl);
           } else {
             router.replace('/onboarding');
           }
         } catch (err) {
-          console.error('Error checking user pets:', err);
           router.replace('/onboarding');
         }
       }
@@ -86,20 +76,13 @@ function LoginPageContent() {
         // Migration is automatic because Firebase keeps the same UID when linking accounts
         // The user.uid stays the same, so all data is already linked
         // No need to migrate data - Firebase handles it automatically
-        console.log('Anonymous account upgraded successfully');
         
         // Wait a moment for auth state to update, then force redirect
         setTimeout(async () => {
           const currentUser = auth.currentUser;
           if (currentUser && !currentUser.isAnonymous) {
-            console.log('Force redirect after upgrade', { 
-              uid: currentUser.uid, 
-              isAnonymous: currentUser.isAnonymous,
-              hasRedirected 
-            });
             try {
               const pets = await getUserPets(currentUser.uid);
-              console.log('Found pets in force redirect:', pets.length);
               
               if (pets.length > 0) {
                 const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
@@ -107,23 +90,16 @@ function LoginPageContent() {
                 if (urlConversationId) {
                   redirectUrl += `&conversationId=${urlConversationId}`;
                 }
-                console.log('Force redirecting to:', redirectUrl);
                 setHasRedirected(true);
                 // Use window.location for more reliable redirect
                 window.location.href = redirectUrl;
               } else {
-                console.log('No pets found, redirecting to onboarding');
                 setHasRedirected(true);
                 window.location.href = '/onboarding';
               }
             } catch (err) {
-              console.error('Error in force redirect:', err);
+              // Silently handle redirect errors
             }
-          } else {
-            console.log('Force redirect skipped:', { 
-              hasUser: !!currentUser, 
-              isAnonymous: currentUser?.isAnonymous 
-            });
           }
         }, 1000);
       } else {
@@ -134,14 +110,8 @@ function LoginPageContent() {
         setTimeout(async () => {
           const currentUser = auth.currentUser;
           if (currentUser && !currentUser.isAnonymous) {
-            console.log('Force redirect after sign-in', { 
-              uid: currentUser.uid, 
-              isAnonymous: currentUser.isAnonymous,
-              hasRedirected 
-            });
             try {
               const pets = await getUserPets(currentUser.uid);
-              console.log('Found pets in force redirect:', pets.length);
               
               if (pets.length > 0) {
                 const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
@@ -149,23 +119,16 @@ function LoginPageContent() {
                 if (urlConversationId) {
                   redirectUrl += `&conversationId=${urlConversationId}`;
                 }
-                console.log('Force redirecting to:', redirectUrl);
                 setHasRedirected(true);
                 // Use window.location for more reliable redirect
                 window.location.href = redirectUrl;
               } else {
-                console.log('No pets found, redirecting to onboarding');
                 setHasRedirected(true);
                 window.location.href = '/onboarding';
               }
             } catch (err) {
-              console.error('Error in force redirect:', err);
+              // Silently handle redirect errors
             }
-          } else {
-            console.log('Force redirect skipped:', { 
-              hasUser: !!currentUser, 
-              isAnonymous: currentUser?.isAnonymous 
-            });
           }
         }, 1000);
       }

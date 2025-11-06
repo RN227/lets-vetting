@@ -34,7 +34,6 @@ function initializeFirebaseAdmin() {
 
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       // Production: Use service account credentials
-      console.log('Initializing Firebase Admin with service account...');
       const serviceAccount = JSON.parse(
         process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       );
@@ -43,15 +42,12 @@ function initializeFirebaseAdmin() {
       });
     } else if (isEmulator) {
       // Development: Use emulator (no credentials needed)
-      console.log('Initializing Firebase Admin for emulator...');
       const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project';
       adminApp = initializeApp({
         projectId,
       });
-      console.log(`Connected to Firebase Emulator (Project: ${projectId})`);
     } else if (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
       // Cloud environment: Use Application Default Credentials
-      console.log('Initializing Firebase Admin with default credentials...');
       adminApp = initializeApp({
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
@@ -73,14 +69,12 @@ function initializeFirebaseAdmin() {
     // Connect to emulator if environment variables are set
     if (process.env.FIRESTORE_EMULATOR_HOST) {
       const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
-      console.log(`Firestore connected to emulator at ${host}:${port}`);
+      // Emulator connection handled automatically
     }
 
     if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
-      console.log(`Auth connected to emulator at ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
+      // Emulator connection handled automatically
     }
-
-    console.log('Firebase Admin initialized successfully');
   } catch (error) {
     console.error('Error initializing Firebase Admin:', error);
     throw error;

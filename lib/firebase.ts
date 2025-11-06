@@ -42,14 +42,6 @@ if (missingEnvVars.length > 0) {
   );
 }
 
-// Log Firebase configuration (without sensitive data)
-console.log('🔥 Firebase Config:', {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain,
-  hasApiKey: !!firebaseConfig.apiKey,
-  hasAppId: !!firebaseConfig.appId,
-});
-
 // Initialize Firebase app (singleton pattern) - lazy initialization
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
@@ -78,18 +70,14 @@ function getFirebaseApp(): FirebaseApp {
             messagingSenderId: '123456789',
             appId: '1:123456789:web:build-placeholder',
           }, 'build-placeholder');
-          console.log('⚠️ Firebase initialized with placeholder config (build only)');
           return firebaseApp;
         }
         // Not build time - throw normally
         throw new Error('Firebase not configured. Environment variables are required.');
       }
       
-      console.log('🔥 Initializing Firebase app...');
       firebaseApp = initializeApp(firebaseConfig);
-      console.log('✅ Firebase initialized successfully');
     } else {
-      console.log('🔥 Using existing Firebase app');
       firebaseApp = getApps()[0];
     }
   }
@@ -106,7 +94,6 @@ function getFirebaseAuth(): Auth {
       const emulatorHost = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST;
       try {
         connectAuthEmulator(firebaseAuth, `http://${emulatorHost}`, { disableWarnings: true });
-        console.log(`✅ Auth connected to emulator at ${emulatorHost}`);
       } catch (error: any) {
         // Ignore error if already connected
         if (!error.message?.includes('already been initialized')) {
@@ -129,7 +116,6 @@ function getFirebaseDb(): Firestore {
       const [host, port] = emulatorHost.split(':');
       try {
         connectFirestoreEmulator(firebaseDb, host, parseInt(port, 10));
-        console.log(`✅ Firestore connected to emulator at ${host}:${port}`);
       } catch (error: any) {
         // Ignore error if already connected
         if (!error.message?.includes('already been initialized')) {
@@ -171,7 +157,6 @@ try {
       }, 'build-placeholder');
       exportedAuth = getAuth(exportedApp);
       exportedDb = getFirestore(exportedApp);
-      console.log('⚠️ Using placeholder Firebase config for build');
     } catch (placeholderError) {
       // If placeholder also fails, re-throw original error
       console.error('Failed to create placeholder Firebase app:', placeholderError);

@@ -30,15 +30,12 @@ export async function migrateAnonymousUserData(
   messagesMigrated: number;
 }> {
   try {
-    console.log('Starting migration from anonymous user:', anonymousUserId, 'to permanent user:', permanentUserId);
-
     // Step 1: Find all pets owned by the anonymous user
     const petsRef = collection(db, 'pets');
     const petsQuery = query(petsRef, where('userId', '==', anonymousUserId));
     const petsSnapshot = await getDocs(petsQuery);
 
     if (petsSnapshot.empty) {
-      console.log('No pets found for anonymous user');
       return {
         petsMigrated: 0,
         conversationsMigrated: 0,
@@ -73,8 +70,6 @@ export async function migrateAnonymousUserData(
       batchCount = 0;
     }
 
-    console.log(`Migrated ${petsSnapshot.size} pets`);
-
     // Step 3: Find all conversations for the migrated pets
     const conversationsRef = collection(db, 'conversations');
     const conversationsQuery = query(
@@ -102,8 +97,6 @@ export async function migrateAnonymousUserData(
         allConversations.push(convDoc.id);
       });
     }
-
-    console.log(`Found ${allConversations.length} conversations to migrate`);
 
     // Step 4: Count messages (conversations don't need updates, just the pets)
     // Messages are in subcollections and don't have userId fields

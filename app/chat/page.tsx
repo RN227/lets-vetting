@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { getPetById } from '@/lib/services/pets';
@@ -29,10 +29,31 @@ function ChatPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [selectedPills, setSelectedPills] = useState<string[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const petId = searchParams.get('petId');
   const existingConversationId = searchParams.get('conversationId');
   const isAnon = isAnonymous();
+
+  // Common pet health conditions for quick selection
+  const conditionPills = [
+    'Not eating',
+    'Vomiting',
+    'Diarrhea',
+    'Lethargy',
+    'Coughing',
+    'Sneezing',
+    'Itching',
+    'Limping',
+    'Eye discharge',
+    'Ear problems',
+    'Skin issues',
+    'Behavior changes',
+    'Weight loss',
+    'Excessive thirst',
+    'Difficulty breathing',
+  ];
 
   // Ticker words for loading state
   const tickerWords = ['Thinking', 'Analyzing', 'Responding', 'Preparing'];
@@ -50,6 +71,17 @@ function ChatPageContent() {
 
     return () => clearInterval(interval);
   }, [sending, tickerWords.length]);
+
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      // Set max height to ~6 lines (approximately 150px)
+      const maxHeight = 150;
+      textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
+    }
+  }, [message]);
 
   // Handle viewport height changes when keyboard opens/closes
   useEffect(() => {
@@ -169,14 +201,30 @@ function ChatPageContent() {
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() || !petId || !pet) return;
+  const handlePillClick = (pill: string) => {
+    if (selectedPills.includes(pill)) {
+      // Deselect if already selected
+      setSelectedPills(selectedPills.filter((p) => p !== pill));
+    } else {
+      // Add to selected pills
+      setSelectedPills([...selectedPills, pill]);
+    }
+  };
 
-    const userMessage = message.trim();
+  const handleSendPills = async () => {
+    if (selectedPills.length === 0 || !petId || !pet) return;
+
+    const userMessage = `${pet.name} is experiencing: ${selectedPills.join(', ')}.`;
+    setSelectedPills([]);
     setMessage('');
     setSending(true);
     setError(null);
+
+    await sendMessage(userMessage);
+  };
+
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim() || !petId || !pet) return;
 
     try {
       // Create conversation if it doesn't exist yet (first message)
@@ -191,14 +239,14 @@ function ChatPageContent() {
         id: `temp-${Date.now()}`,
         conversationId: currentConversationId,
         role: 'user',
-        content: userMessage,
+        content: messageText.trim(),
         feedback: null,
         createdAt: new Date(),
       };
       setMessages((prev) => [...prev, tempUserMessage]);
 
       // 2. Save user message to Firestore
-      const userMessageId = await addMessage(currentConversationId, 'user', userMessage);
+      const userMessageId = await addMessage(currentConversationId, 'user', messageText.trim());
 
       // Update the temp message with real id
       setMessages((prev) =>
@@ -226,7 +274,7 @@ function ChatPageContent() {
         body: JSON.stringify({
           petId,
           conversationId: currentConversationId,
-          userMessage,
+          userMessage: messageText.trim(),
           pet: {
             name: pet.name,
             species: pet.species,
@@ -280,6 +328,18 @@ function ChatPageContent() {
       );
       setSending(false);
     }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || !petId || !pet) return;
+
+    const userMessage = message.trim();
+    setMessage('');
+    setSending(true);
+    setError(null);
+
+    await sendMessage(userMessage);
   };
 
   const handleFeedback = async (messageId: string, feedback: 'up' | 'down') => {
@@ -472,32 +532,51 @@ function ChatPageContent() {
       {/* Chat Messages Area */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-8 pb-32">
         <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-5 pb-4">
-          {messages.length === 0 ? (
-            /* Empty state */
-            <div className="flex flex-col items-center justify-center h-full text-center py-16">
-              <div className="w-14 h-14 bg-white/10 border-2 border-white/20 rounded-xl flex items-center justify-center mb-8">
-                <svg
-                  className="w-7 h-7 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
+          {/* Welcome message - always show as first assistant message */}
+          {messages.length === 0 && (
+            <div className="flex justify-start fade-in">
+              <div className="max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] rounded-xl px-5 py-4 bg-white shadow-md">
+                <div className="text-[15px] leading-relaxed prose prose-sm max-w-none break-words text-[#073F6C]" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                  <p className="mb-0 break-words">
+                    Hi! I&apos;m here to help with {pet?.name}&apos;s health concerns. Describe any symptoms or health issues, and I&apos;ll provide guidance on the best course of action.
+                  </p>
+                </div>
               </div>
-              <h2 className="text-xl font-bold text-white mb-3">
-                Start a conversation
-              </h2>
-              <p className="text-sm text-white/80 max-w-md leading-relaxed">
-                Describe any symptoms or health concerns about {pet?.name}, and I&apos;ll provide guidance on the best course of action.
-              </p>
             </div>
-          ) : (
+          )}
+
+          {/* Condition Pills - show when no messages or when user hasn't sent first message */}
+          {messages.length === 0 && (
+            <div className="mt-6 mb-8">
+              <p className="text-white/80 text-sm mb-4 px-1">Quick start - select conditions:</p>
+              <div className="flex flex-wrap gap-2">
+                {conditionPills.map((pill) => (
+                  <button
+                    key={pill}
+                    onClick={() => handlePillClick(pill)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      selectedPills.includes(pill)
+                        ? 'bg-white text-[#073F6C] border-2 border-[#073F6C]'
+                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                    }`}
+                  >
+                    {pill}
+                  </button>
+                ))}
+              </div>
+              {selectedPills.length > 0 && (
+                <button
+                  onClick={handleSendPills}
+                  disabled={sending}
+                  className="mt-4 px-6 py-3 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Send {selectedPills.length} {selectedPills.length === 1 ? 'condition' : 'conditions'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {messages.length > 0 && (
             /* Messages */
             <>
               {messages.map((msg) => (
@@ -640,14 +719,22 @@ function ChatPageContent() {
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-3">
-            {/* Text Input */}
-            <input
-              type="text"
+          <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
+            {/* Text Input - Textarea that expands */}
+            <textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                // Allow Enter to submit, Shift+Enter for new line
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e as any);
+                }
+              }}
               placeholder="Describe symptoms..."
               disabled={sending}
+              rows={1}
               onBlur={() => {
                 // Force viewport update when keyboard closes
                 setTimeout(() => {
@@ -668,7 +755,7 @@ function ChatPageContent() {
                   }
                 }, 100);
               }}
-              className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed break-words"
+              className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed break-words resize-none overflow-y-auto min-h-[48px] max-h-[150px]"
               autoComplete="off"
             />
 
@@ -687,7 +774,7 @@ function ChatPageContent() {
                 <>
                   <span className="hidden sm:inline">Send</span>
                   <svg
-                    className="w-4 h-4"
+                    className="w-4 h-4 rotate-90"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
