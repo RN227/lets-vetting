@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getUserPets } from '@/lib/services/pets';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const { user, loading, signInWithGoogle, upgradeAnonymousAccount, isAnonymous } = useAuth();
@@ -11,11 +12,18 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasRedirected, setHasRedirected] = useState(false);
+  
+  // Get petId and conversationId from URL params if they exist
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const urlPetId = searchParams?.get('petId');
+  const urlConversationId = searchParams?.get('conversationId');
 
   useEffect(() => {
     async function checkUserPets() {
       // Only redirect if user is authenticated, not anonymous, auth is not loading, and we haven't redirected yet
       if (user && !loading && !user.isAnonymous && !hasRedirected) {
+        console.log('Redirecting after sign-in:', { uid: user.uid, email: user.email, isAnonymous: user.isAnonymous });
+        
         // Reset signing in state when user is authenticated
         if (isSigningIn) {
           setIsSigningIn(false);
@@ -26,9 +34,18 @@ export default function LoginPage() {
         
         try {
           const pets = await getUserPets(user.uid);
+          console.log('Found pets after sign-in:', pets.length);
 
           if (pets.length > 0) {
-            router.push(`/chat?petId=${pets[0].id}`);
+            // Use petId from URL if provided, otherwise use first pet
+            const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
+            
+            // Preserve conversationId from URL if it exists
+            if (urlConversationId) {
+              router.push(`/chat?petId=${petId}&conversationId=${urlConversationId}`);
+            } else {
+              router.push(`/chat?petId=${petId}`);
+            }
           } else {
             router.push('/onboarding');
           }
@@ -39,13 +56,19 @@ export default function LoginPage() {
       }
     }
 
-    checkUserPets();
+    // Add a small delay to ensure auth state is fully updated
+    const timeoutId = setTimeout(() => {
+      checkUserPets();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [user, loading, router, isSigningIn, hasRedirected]);
 
   const handleSignIn = async () => {
     try {
       setIsSigningIn(true);
       setError(null);
+      setHasRedirected(false); // Reset redirect flag when starting new sign-in
 
       // Check if user is anonymous
       if (isAnonymous() && user) {
@@ -58,15 +81,13 @@ export default function LoginPage() {
         // No need to migrate data - Firebase handles it automatically
         console.log('Anonymous account upgraded successfully');
         
-        // Reset signing in state - the useEffect will handle redirect
-        // Don't set it to false immediately as we want to wait for auth state to update
-        // The useEffect will handle it when user state updates
+        // The useEffect will handle redirect when auth state updates
+        // No need to force redirect here
       } else {
         // Regular sign in for new users
         await signInWithGoogle();
         
-        // Reset signing in state - the useEffect will handle redirect
-        // Don't set it to false immediately as we want to wait for auth state to update
+        // The useEffect will handle redirect when auth state updates
       }
     } catch (err: any) {
       console.error('Sign in error:', err);

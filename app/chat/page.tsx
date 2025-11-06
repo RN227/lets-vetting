@@ -327,7 +327,16 @@ function ChatPageContent() {
               Sign in to save your pet details and conversations
             </p>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => {
+                // Preserve current conversationId in URL when redirecting to login
+                const currentUrl = new URL(window.location.href);
+                const conversationId = currentUrl.searchParams.get('conversationId');
+                const petId = currentUrl.searchParams.get('petId');
+                const loginUrl = conversationId && petId 
+                  ? `/login?petId=${petId}&conversationId=${conversationId}`
+                  : '/login';
+                router.push(loginUrl);
+              }}
               className="px-4 py-2 bg-white text-[#073F6C] rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-xs uppercase whitespace-nowrap"
             >
               Sign In
