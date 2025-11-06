@@ -1,22 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getUserPets } from '@/lib/services/pets';
-import { auth } from '@/lib/firebase';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { user, loading, signInWithGoogle, upgradeAnonymousAccount, isAnonymous } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasRedirected, setHasRedirected] = useState(false);
   
   // Get petId and conversationId from URL params if they exist
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const urlPetId = searchParams?.get('petId');
-  const urlConversationId = searchParams?.get('conversationId');
+  const urlPetId = searchParams.get('petId');
+  const urlConversationId = searchParams.get('conversationId');
 
   useEffect(() => {
     async function checkUserPets() {
@@ -37,32 +36,33 @@ export default function LoginPage() {
           console.log('Found pets after sign-in:', pets.length);
 
           if (pets.length > 0) {
-            // Use petId from URL if provided, otherwise use first pet
+            // Use petId from URL if provided and valid, otherwise use first pet
             const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
             
-            // Preserve conversationId from URL if it exists
+            // Build the redirect URL
+            let redirectUrl = `/chat?petId=${petId}`;
             if (urlConversationId) {
-              router.push(`/chat?petId=${petId}&conversationId=${urlConversationId}`);
-            } else {
-              router.push(`/chat?petId=${petId}`);
+              redirectUrl += `&conversationId=${urlConversationId}`;
             }
+            
+            console.log('Redirecting to:', redirectUrl);
+            // Use replace to avoid adding to history
+            router.replace(redirectUrl);
           } else {
-            router.push('/onboarding');
+            router.replace('/onboarding');
           }
         } catch (err) {
           console.error('Error checking user pets:', err);
-          router.push('/onboarding');
+          router.replace('/onboarding');
         }
       }
     }
 
-    // Add a small delay to ensure auth state is fully updated
-    const timeoutId = setTimeout(() => {
+    // Only check if we have a user and auth is not loading
+    if (user && !loading) {
       checkUserPets();
-    }, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [user, loading, router, isSigningIn, hasRedirected]);
+    }
+  }, [user, loading, router, isSigningIn, hasRedirected, urlPetId, urlConversationId]);
 
   const handleSignIn = async () => {
     try {
@@ -106,7 +106,8 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
+  // Show loading only if auth is loading and we're not signing in
+  if (loading && !isSigningIn) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
         <div className="text-center">
@@ -120,7 +121,8 @@ export default function LoginPage() {
   }
 
   // Don't show login page if user is authenticated and not anonymous
-  if (user && !user.isAnonymous) {
+  // But allow showing if we're in the process of signing in
+  if (user && !user.isAnonymous && !isSigningIn) {
     return null;
   }
 
@@ -211,5 +213,22 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4">
+            <div className="spinner w-full h-full"></div>
+          </div>
+          <p className="text-white text-sm">Loading</p>
+        </div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }

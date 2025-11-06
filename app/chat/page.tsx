@@ -92,12 +92,20 @@ function ChatPageContent() {
 
         // Check if we're loading an existing conversation
         if (existingConversationId) {
-          // Load existing conversation
-          setConversationId(existingConversationId);
+          try {
+            // Load existing conversation
+            setConversationId(existingConversationId);
 
-          // Load existing messages
-          const existingMessages = await getConversationMessages(existingConversationId);
-          setMessages(existingMessages);
+            // Load existing messages
+            const existingMessages = await getConversationMessages(existingConversationId);
+            setMessages(existingMessages);
+          } catch (convErr) {
+            console.error('Error loading conversation:', convErr);
+            // If conversation doesn't exist or can't be loaded, just continue without it
+            // User can start a new conversation
+            setConversationId(null);
+            setMessages([]);
+          }
         }
         // Note: If no conversationId, we don't create one yet.
         // Conversation will be created when user sends first message.
