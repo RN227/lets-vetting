@@ -198,21 +198,21 @@ export default function AddPetPage() {
   const availableBreeds = formData.species === 'dog' ? DOG_BREEDS : CAT_BREEDS;
 
   return (
-    <div className="min-h-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 py-4 sm:py-6 animate-fade-in" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 1rem)' }}>
+    <div className="h-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 py-4 sm:py-6 animate-fade-in overflow-hidden">
       <div className="w-full max-w-2xl lg:max-w-3xl mx-auto flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-white mb-2">
+        <div className="text-center mb-4 flex-shrink-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">
             Tell us about your pet
           </h1>
-          <p className="text-white/80 text-sm leading-relaxed">
+          <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
             Let&apos;s get to know your furry friend!
           </p>
         </div>
 
         {/* Form Card - Scrollable */}
-        <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md flex-1 flex flex-col min-h-0 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md flex-1 flex flex-col min-h-0 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 flex-1 flex flex-col">
             {/* Error Message */}
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl fade-in">
@@ -458,7 +458,7 @@ export default function AddPetPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-3 mt-auto pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 1rem)' }}>
+            <div className="pt-3 mt-auto pb-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
               <button
                 type="submit"
                 disabled={loading}
@@ -475,7 +475,7 @@ export default function AddPetPage() {
               </button>
             </div>
 
-            <p className="text-center text-xs text-gray-500 leading-relaxed mt-2">
+            <p className="text-center text-xs text-gray-500 leading-relaxed mt-2 pb-2">
               * All fields are required
             </p>
           </form>

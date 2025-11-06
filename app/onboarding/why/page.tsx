@@ -14,68 +14,68 @@ function WhyUsPageContent() {
   return (
     <div className="h-screen w-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 pb-24 overflow-hidden animate-fade-in">
       {/* Header */}
-      <div className="pt-4 mb-2">
+      <div className="pt-3 mb-1">
         <div className="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">
             Why us?
           </h1>
         </div>
       </div>
 
       {/* Logo below header - 30% smaller than first screen */}
-      <div className="flex justify-center mb-3">
+      <div className="flex justify-center mb-2">
         <img
           src="/logo.png"
           alt="LetsVet Logo"
           className="w-auto h-auto"
-          style={{ maxWidth: '160px', height: 'auto' }}
+          style={{ maxWidth: '140px', height: 'auto' }}
         />
       </div>
 
       {/* Content Card - Centered Vertically */}
       <div className="flex-1 flex items-center justify-center overflow-y-auto">
-        <div className="w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl -mt-4 py-2">
+        <div className="w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl -mt-2 py-2">
           {/* Content Card */}
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md">
+          <div className="bg-white rounded-xl p-3 sm:p-5 shadow-md">
             {/* Bullet Points */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
-                  <span className="text-white text-xs font-bold">1</span>
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
+                  <span className="text-white text-[10px] font-bold">1</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-base text-[#073F6C] font-semibold leading-relaxed">
+                  <p className="text-sm text-[#073F6C] font-semibold leading-snug">
                     Know what to do, fast
                   </p>
-                  <p className="text-xs text-[#073F6C]/70 leading-relaxed mt-1">
+                  <p className="text-[10px] text-[#073F6C]/70 leading-tight mt-0.5">
                     Stop googling symptoms at 2am. Get clear guidance in seconds, not hours.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
-                  <span className="text-white text-xs font-bold">2</span>
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
+                  <span className="text-white text-[10px] font-bold">2</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-base text-[#073F6C] font-semibold leading-relaxed">
+                  <p className="text-sm text-[#073F6C] font-semibold leading-snug">
                     Save unnecessary vet visits
                   </p>
-                  <p className="text-xs text-[#073F6C]/70 leading-relaxed mt-1">
+                  <p className="text-[10px] text-[#073F6C]/70 leading-tight mt-0.5">
                     Understand if it can wait for morning or needs attention now.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
-                  <span className="text-white text-xs font-bold">3</span>
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
+                  <span className="text-white text-[10px] font-bold">3</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-base text-[#073F6C] font-semibold leading-relaxed">
+                  <p className="text-sm text-[#073F6C] font-semibold leading-snug">
                     Peace of mind when you need it
                   </p>
-                  <p className="text-xs text-[#073F6C]/70 leading-relaxed mt-1">
+                  <p className="text-[10px] text-[#073F6C]/70 leading-tight mt-0.5">
                     Your pet can&apos;t tell you what&apos;s wrong - we help you figure it out.
                   </p>
                 </div>
