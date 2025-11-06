@@ -30,6 +30,7 @@ function ChatPageContent() {
   const [tickerIndex, setTickerIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const [selectedPills, setSelectedPills] = useState<string[]>([]);
+  const [contextualPills, setContextualPills] = useState<Record<string, string[]>>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const petId = searchParams.get('petId');
@@ -221,6 +222,28 @@ function ChatPageContent() {
     }, 0);
   };
 
+  const handleContextualPillClick = (pill: string) => {
+    // Append contextual pill text to existing message
+    const currentText = message.trim();
+    if (currentText === '') {
+      // If input is empty, just set the pill text
+      setMessage(pill);
+    } else {
+      // If input has text, append with comma separator
+      setMessage(`${currentText}, ${pill}`);
+    }
+
+    // Focus the textarea
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Move cursor to end of text
+        const length = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(length, length);
+      }
+    }, 0);
+  };
+
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || !petId || !pet) return;
 
@@ -292,6 +315,7 @@ function ChatPageContent() {
 
       const data = await response.json();
       const assistantResponse = data.response;
+      const pills = data.contextualPills || [];
 
       // 4. Add AI response to UI
       const tempAssistantMessage: Message = {
@@ -304,6 +328,14 @@ function ChatPageContent() {
       };
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
+      // Store contextual pills for this message
+      if (pills.length > 0) {
+        setContextualPills((prev) => ({
+          ...prev,
+          [tempAssistantMessage.id]: pills.slice(0, 3),
+        }));
+      }
+
       // 5. Save AI response to Firestore
       const assistantMessageId = await addMessage(
         currentConversationId,
@@ -311,12 +343,24 @@ function ChatPageContent() {
         assistantResponse
       );
 
-      // Update the temp message with real id
+      // Update the temp message with real id and move contextual pills
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempAssistantMessage.id ? { ...msg, id: assistantMessageId } : msg
         )
       );
+
+      // Move contextual pills from temp ID to real ID
+      if (pills.length > 0) {
+        setContextualPills((prev) => {
+          const newPills = { ...prev };
+          if (newPills[tempAssistantMessage.id]) {
+            newPills[assistantMessageId] = newPills[tempAssistantMessage.id];
+            delete newPills[tempAssistantMessage.id];
+          }
+          return newPills;
+        });
+      }
 
       setSending(false);
     } catch (err) {
@@ -335,6 +379,7 @@ function ChatPageContent() {
     const userMessage = message.trim();
     setMessage('');
     setSelectedPills([]); // Clear selected pills when message is sent
+    // Keep contextual pills from previous messages - they persist
     setSending(true);
     setError(null);
 
@@ -586,56 +631,74 @@ function ChatPageContent() {
 
                     {/* Feedback buttons for assistant messages */}
                     {msg.role === 'assistant' && (
-                      <div className="flex items-center gap-2 mt-5 pt-4 border-t border-gray-200">
-                        <button
-                          onClick={() => handleFeedback(msg.id, 'up')}
-                          className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
-                            msg.feedback === 'up'
-                              ? 'bg-[#073F6C] text-white'
-                              : 'text-gray-500 hover:bg-gray-100'
-                          }`}
-                          title="Helpful"
-                          aria-label="Mark as helpful"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                      <>
+                        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-gray-200">
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'up')}
+                            className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
+                              msg.feedback === 'up'
+                                ? 'bg-[#073F6C] text-white'
+                                : 'text-gray-500 hover:bg-gray-100'
+                            }`}
+                            title="Helpful"
+                            aria-label="Mark as helpful"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleFeedback(msg.id, 'down')}
-                          className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
-                            msg.feedback === 'down'
-                              ? 'bg-[#073F6C] text-white'
-                              : 'text-gray-500 hover:bg-gray-100'
-                          }`}
-                          title="Not helpful"
-                          aria-label="Mark as not helpful"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'down')}
+                            className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
+                              msg.feedback === 'down'
+                                ? 'bg-[#073F6C] text-white'
+                                : 'text-gray-500 hover:bg-gray-100'
+                            }`}
+                            title="Not helpful"
+                            aria-label="Mark as not helpful"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        {/* Contextual pills for assistant messages */}
+                        {contextualPills[msg.id] && contextualPills[msg.id].length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="flex flex-wrap gap-2">
+                              {contextualPills[msg.id].map((pill, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => handleContextualPillClick(pill)}
+                                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                                >
+                                  {pill}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

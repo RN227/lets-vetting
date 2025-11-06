@@ -138,9 +138,59 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
       throw new Error('Unexpected response type from Anthropic API');
     }
 
-    // Return the AI response
+    // Generate contextual pills based on the assistant's response
+    // Ask Claude to suggest up to 3 follow-up questions or actions
+    const pillsPrompt = `Based on your previous response about ${pet.name}'s health, suggest up to 3 short, actionable follow-up questions or actions that would help the pet owner provide more information or take next steps. Each suggestion should be:
+- Short (3-6 words max)
+- Actionable and specific
+- Relevant to the conversation context
+- Written as a question or action phrase
+
+Return ONLY a JSON array of strings, nothing else. Example: ["How long has this been happening?", "Is there any discharge?", "What is their appetite like?"]
+
+Your response: ${assistantMessage.text}
+
+Suggestions:`;
+
+    let contextualPills: string[] = [];
+    try {
+      const pillsResponse = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        system: 'You are a helpful assistant that generates short, actionable follow-up questions for pet health conversations. Return only a JSON array of strings.',
+        messages: [{
+          role: 'user',
+          content: pillsPrompt,
+        }],
+      });
+
+      const pillsMessage = pillsResponse.content[0];
+      if (pillsMessage.type === 'text') {
+          try {
+            // Try to parse JSON from the response
+            const jsonMatch = pillsMessage.text.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              contextualPills = JSON.parse(jsonMatch[0]);
+              // Limit to 3 pills and ensure they're strings
+              contextualPills = contextualPills
+                .slice(0, 3)
+                .filter((pill: any) => typeof pill === 'string' && pill.trim().length > 0)
+                .map((pill: string) => pill.trim());
+            }
+          } catch (parseError) {
+            // If parsing fails, use empty array
+            contextualPills = [];
+          }
+      }
+    } catch (pillsError) {
+      // If pill generation fails, continue without pills
+      contextualPills = [];
+    }
+
+    // Return the AI response and contextual pills
     return NextResponse.json({
       response: assistantMessage.text,
+      contextualPills: contextualPills.slice(0, 3), // Ensure max 3 pills
     });
   } catch (error: any) {
     console.error('Error in chat API route:', error);
