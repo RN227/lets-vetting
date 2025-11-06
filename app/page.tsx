@@ -7,8 +7,6 @@ import { useAuth } from '@/lib/auth-context';
 export default function Home() {
   const { user, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
-  const [showButtons, setShowButtons] = useState(false);
-  const [showButtonsFade, setShowButtonsFade] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
@@ -19,33 +17,8 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  // Animation sequence - logo moves up, then buttons appear
-  useEffect(() => {
-    if (!loading && !user) {
-      // After 2 seconds, move logo up
-      const timer1 = setTimeout(() => {
-        setShowButtons(true);
-      }, 2000);
-
-      // After 2.5 seconds (0.5s after logo starts moving), show buttons
-      const timer2 = setTimeout(() => {
-        setShowButtonsFade(true);
-      }, 2500);
-
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-      };
-    }
-  }, [loading, user]);
-
   const handleAlreadyHaveAccount = () => {
-    // Transition out buttons
-    setShowButtonsFade(false);
-    // After transition, show login section
-    setTimeout(() => {
-      setShowLogin(true);
-    }, 500);
+    setShowLogin(true);
   };
 
   const handleSignIn = async () => {
@@ -78,33 +51,28 @@ export default function Home() {
   }
 
   return (
-    <main className="h-screen w-screen flex items-center justify-center px-4 sm:px-6 bg-[#073F6C] relative overflow-hidden">
-      {/* Logo - perfectly centered, moves up when buttons appear */}
-      <div 
-        className="absolute inset-0 flex items-center justify-center scale-in transition-transform duration-1000 ease-out"
-        style={{
-          transform: showButtons ? 'translateY(-100px)' : 'translateY(0)',
-        }}
-      >
+    <main className="h-screen w-screen flex flex-col px-4 sm:px-6 bg-[#073F6C] relative overflow-hidden">
+      {/* Logo and tagline - positioned in top half */}
+      <div className="flex flex-col items-center justify-center flex-1">
         <img
           src="/logo.png"
           alt="LetsVet Logo"
           className="max-w-[280px] w-auto h-auto"
           style={{ maxWidth: '280px', height: 'auto' }}
         />
+        <p className="text-white text-center text-sm font-light mt-1 px-4 whitespace-nowrap">
+          Instant AI guidance for your pet's health concerns
+        </p>
       </div>
 
-      {/* Container for buttons and login - positioned below logo */}
-      <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-md lg:max-w-lg px-4" style={{ top: 'calc(50vh + 50px)' }}>
-        {/* Buttons - fade in/out */}
-        <div
-          className={`w-full space-y-3 transition-opacity duration-500 ${
-            showButtonsFade && !showLogin ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
+      {/* Container for buttons and login - positioned at bottom */}
+      <div className="w-full max-w-md lg:max-w-lg mx-auto pb-6 sm:pb-8">
+        {/* Buttons */}
+        {!showLogin && (
+          <div className="w-full space-y-3">
           {/* Primary Button */}
           <button
-            onClick={() => router.push('/how-it-works')}
+            onClick={() => router.push('/onboarding/why')}
             className="w-full px-6 py-3.5 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md"
           >
             Get Started
@@ -117,14 +85,12 @@ export default function Home() {
           >
             I Already Have an Account
           </button>
-        </div>
+          </div>
+        )}
 
-        {/* Login Section - fade in */}
-        <div
-          className={`w-full transition-opacity duration-500 ${
-            showLogin ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
+        {/* Login Section */}
+        {showLogin && (
+          <div className="w-full">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-light text-white mb-3">Welcome Back</h2>
             <p className="text-white/80 text-sm leading-relaxed">
@@ -170,17 +136,13 @@ export default function Home() {
 
           {/* Back Button */}
           <button
-            onClick={() => {
-              setShowLogin(false);
-              setTimeout(() => {
-                setShowButtonsFade(true);
-              }, 500);
-            }}
+            onClick={() => setShowLogin(false)}
             className="w-full mt-4 px-6 py-3.5 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white/10 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md"
           >
             Back
           </button>
-        </div>
+          </div>
+        )}
       </div>
     </main>
   );

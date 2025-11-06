@@ -3,36 +3,38 @@
 import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 
-function HowItWorksPageContent() {
+function WhyUsPageContent() {
   const router = useRouter();
 
   const handleContinue = () => {
-    // Navigate to onboarding for new users
-    router.push('/onboarding');
+    // Navigate to how it works page
+    router.push('/onboarding/how');
   };
 
   return (
-    <div className="h-screen w-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 pb-24 overflow-hidden">
-      {/* Header with Logo */}
-      <div className="pt-8 mb-10">
+    <div className="h-screen w-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 pb-24 overflow-hidden animate-fade-in">
+      {/* Header */}
+      <div className="pt-6 mb-3">
         <div className="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <h1 className="text-3xl font-bold text-white">
-              How it Works
-            </h1>
-            <img
-              src="/logo_notext.png"
-              alt="LetsVet Logo"
-              className="h-9 w-auto"
-              style={{ height: '2.25rem' }}
-            />
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-3">
+            Why us?
+          </h1>
         </div>
+      </div>
+
+      {/* Logo below header - 30% smaller than first screen */}
+      <div className="flex justify-center mb-4">
+        <img
+          src="/logo.png"
+          alt="LetsVet Logo"
+          className="w-auto h-auto"
+          style={{ maxWidth: '196px', height: 'auto' }}
+        />
       </div>
 
       {/* Content Card - Centered Vertically */}
       <div className="flex-1 flex items-center justify-center overflow-y-auto">
-        <div className="w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl -mt-16 py-8">
+        <div className="w-full max-w-2xl lg:max-w-3xl xl:max-w-4xl -mt-8 py-4">
           {/* Content Card */}
           <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md">
             {/* Bullet Points */}
@@ -41,27 +43,42 @@ function HowItWorksPageContent() {
                 <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
                   <span className="text-white text-sm font-bold">1</span>
                 </div>
-                <p className="text-lg text-[#073F6C] leading-relaxed pt-1">
-                  Share your pet&apos;s symptoms
-                </p>
+                <div className="flex-1">
+                  <p className="text-lg text-[#073F6C] font-semibold leading-relaxed">
+                    Know what to do, fast
+                  </p>
+                  <p className="text-sm text-[#073F6C]/70 leading-relaxed mt-1">
+                    Stop googling symptoms at 2am. Get clear guidance in seconds, not hours.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
                   <span className="text-white text-sm font-bold">2</span>
                 </div>
-                <p className="text-lg text-[#073F6C] leading-relaxed pt-1">
-                  Get instant AI-powered insights
-                </p>
+                <div className="flex-1">
+                  <p className="text-lg text-[#073F6C] font-semibold leading-relaxed">
+                    Save unnecessary vet visits
+                  </p>
+                  <p className="text-sm text-[#073F6C]/70 leading-relaxed mt-1">
+                    Understand if it can wait for morning or needs attention now.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#073F6C] flex items-center justify-center mt-0.5">
                   <span className="text-white text-sm font-bold">3</span>
                 </div>
-                <p className="text-lg text-[#073F6C] leading-relaxed pt-1">
-                  Decide on care with confidence
-                </p>
+                <div className="flex-1">
+                  <p className="text-lg text-[#073F6C] font-semibold leading-relaxed">
+                    Peace of mind when you need it
+                  </p>
+                  <p className="text-sm text-[#073F6C]/70 leading-relaxed mt-1">
+                    Your pet can&apos;t tell you what&apos;s wrong - we help you figure it out.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -87,7 +104,7 @@ function HowItWorksPageContent() {
                 />
               </svg>
               <p className="text-[10px] text-yellow-800 leading-tight">
-                LetsVet provides educational information only, not medical diagnosis. Always consult a licensed veterinarian for professional advice. In emergencies, contact your vet immediately.
+                LetsVet provides educational information, not veterinary diagnosis. Always consult your vet for medical advice.
               </p>
             </div>
           </div>
@@ -109,14 +126,14 @@ function HowItWorksPageContent() {
   );
 }
 
-export default function HowItWorksPage() {
+export default function WhyUsPage() {
   return (
     <Suspense fallback={
       <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
         <div className="text-white">Loading...</div>
       </div>
     }>
-      <HowItWorksPageContent />
+      <WhyUsPageContent />
     </Suspense>
   );
 }
