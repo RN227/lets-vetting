@@ -12,9 +12,9 @@ export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Redirect authenticated users to onboarding
+  // Redirect authenticated non-anonymous users to chat or onboarding
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !user.isAnonymous) {
       router.push('/onboarding');
     }
   }, [user, loading, router]);
@@ -72,8 +72,8 @@ export default function Home() {
     );
   }
 
-  // Don't show home page if authenticated (will redirect)
-  if (user) {
+  // Don't show home page if authenticated non-anonymous user (will redirect)
+  if (user && !user.isAnonymous) {
     return null;
   }
 
@@ -104,7 +104,7 @@ export default function Home() {
         >
           {/* Primary Button */}
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push('/how-it-works')}
             className="w-full px-6 py-3.5 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md"
           >
             Get Started

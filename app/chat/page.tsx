@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 import { getPetById } from '@/lib/services/pets';
 import {
   createConversation,
@@ -19,8 +18,7 @@ function ChatPageContent() {
   // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const router = useRouter();
   const searchParams = useSearchParams();
-  const auth = useRequireAuth();
-  const { signOut } = useAuth();
+  const { user, loading: authLoading, signOut, isAnonymous } = useAuth();
 
   const [pet, setPet] = useState<Pet | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -33,7 +31,7 @@ function ChatPageContent() {
 
   const petId = searchParams.get('petId');
   const existingConversationId = searchParams.get('conversationId');
-  const user = auth?.user;
+  const isAnon = isAnonymous();
 
   // Ticker words for loading state
   const tickerWords = ['Thinking', 'Analyzing', 'Responding', 'Preparing'];
@@ -55,10 +53,15 @@ function ChatPageContent() {
   // Initialize: Fetch pet and create/load conversation
   useEffect(() => {
     async function initialize() {
-      // Don't proceed if auth is not ready or user is not authenticated
-      if (!auth || !user) {
-        // If auth is null, we're redirecting (handled by useRequireAuth)
-        // If auth exists but no user, wait for auth to complete
+      // Wait for auth to finish loading
+      if (authLoading) {
+        return;
+      }
+
+      // User must be authenticated (can be anonymous)
+      if (!user) {
+        setError('Authentication required');
+        setLoading(false);
         return;
       }
 
@@ -69,7 +72,7 @@ function ChatPageContent() {
       }
 
       try {
-        // Fetch pet details (only if user is authenticated)
+        // Fetch pet details
         const petData = await getPetById(petId);
 
         if (!petData) {
@@ -108,7 +111,7 @@ function ChatPageContent() {
     }
 
     initialize();
-  }, [petId, existingConversationId, auth, user]);
+  }, [petId, existingConversationId, authLoading, user]);
 
   const handleSignOut = async () => {
     try {
@@ -183,6 +186,7 @@ function ChatPageContent() {
             age: pet.age,
             breed: pet.breed,
             weight: pet.weight,
+            gender: pet.gender,
           },
           messages: conversationHistory,
         }),
@@ -258,9 +262,18 @@ function ChatPageContent() {
     }
   };
 
-  // Show loading screen while checking auth or redirecting
-  if (!auth) {
-    return <AuthLoadingScreen />;
+  // Show loading screen while checking auth
+  if (authLoading || !user) {
+    return (
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4">
+            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
+          </div>
+          <p className="text-white text-sm">Loading</p>
+        </div>
+      </div>
+    );
   }
 
   // Format timestamp for display
@@ -306,6 +319,23 @@ function ChatPageContent() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#073F6C] overflow-hidden">
+      {/* Sign In Banner - Show for anonymous users */}
+      {isAnon && (
+        <div className="bg-yellow-500 border-b border-yellow-600 px-4 sm:px-6 py-3 flex-shrink-0">
+          <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <p className="text-white text-sm font-medium flex-1">
+              Sign in to save your pet details and conversations
+            </p>
+            <button
+              onClick={() => router.push('/login')}
+              className="px-4 py-2 bg-white text-[#073F6C] rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-xs uppercase whitespace-nowrap"
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-[#073F6C] border-b border-white/10 px-4 sm:px-6 py-4 flex-shrink-0">
         <div className="max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between">
@@ -328,46 +358,50 @@ function ChatPageContent() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1 ml-4">
-            <button
-              onClick={() => router.push(`/history?petId=${petId}`)}
-              className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
-              title="View history"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {!isAnon && (
+              <button
+                onClick={() => router.push(`/history?petId=${petId}`)}
+                className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
+                title="View history"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="text-[10px] font-bold uppercase leading-tight">History</span>
-            </button>
-            <button
-              onClick={handleSignOut}
-              className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
-              title="Sign out"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-[10px] font-bold uppercase leading-tight">History</span>
+              </button>
+            )}
+            {!isAnon && (
+              <button
+                onClick={handleSignOut}
+                className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
+                title="Sign out"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              <span className="text-[10px] font-bold uppercase leading-tight">Sign Out</span>
-            </button>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span className="text-[10px] font-bold uppercase leading-tight">Sign Out</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

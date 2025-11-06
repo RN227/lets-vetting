@@ -6,14 +6,14 @@ import { useAuth } from '@/lib/auth-context';
 import { getUserPets } from '@/lib/services/pets';
 
 export default function LoginPage() {
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { user, loading, signInWithGoogle, upgradeAnonymousAccount, isAnonymous } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkUserPets() {
-      if (user && !loading) {
+      if (user && !loading && !user.isAnonymous) {
         setIsSigningIn(false);
         try {
           const pets = await getUserPets(user.uid);
@@ -37,11 +37,34 @@ export default function LoginPage() {
     try {
       setIsSigningIn(true);
       setError(null);
-      await signInWithGoogle();
+
+      // Check if user is anonymous
+      if (isAnonymous() && user) {
+        // Upgrade anonymous account to Google account
+        const anonymousUserId = user.uid;
+        await upgradeAnonymousAccount();
+        
+        // Migration is automatic because Firebase keeps the same UID when linking accounts
+        // The user.uid stays the same, so all data is already linked
+        // No need to migrate data - Firebase handles it automatically
+        console.log('Anonymous account upgraded successfully');
+      } else {
+        // Regular sign in for new users
+        await signInWithGoogle();
+      }
     } catch (err: any) {
       console.error('Sign in error:', err);
-      const errorMessage = err?.message || 'Failed to sign in. Please try again.';
-      setError(errorMessage);
+      
+      // Handle specific Firebase errors
+      if (err?.code === 'auth/credential-already-in-use') {
+        setError('This Google account is already linked to another account. Please sign in with your existing account.');
+      } else if (err?.code === 'auth/email-already-in-use') {
+        setError('This email is already in use. Please sign in with your existing account.');
+      } else {
+        const errorMessage = err?.message || 'Failed to sign in. Please try again.';
+        setError(errorMessage);
+      }
+      
       setIsSigningIn(false);
     }
   };
@@ -59,7 +82,8 @@ export default function LoginPage() {
     );
   }
 
-  if (user) {
+  // Don't show login page if user is authenticated and not anonymous
+  if (user && !user.isAnonymous) {
     return null;
   }
 

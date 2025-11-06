@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -100,6 +100,20 @@ function getFirebaseAuth(): Auth {
   if (!firebaseAuth) {
     const appInstance = getFirebaseApp();
     firebaseAuth = getAuth(appInstance);
+    
+    // Connect to emulator if environment variable is set (client-side only)
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST) {
+      const emulatorHost = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST;
+      try {
+        connectAuthEmulator(firebaseAuth, `http://${emulatorHost}`, { disableWarnings: true });
+        console.log(`✅ Auth connected to emulator at ${emulatorHost}`);
+      } catch (error: any) {
+        // Ignore error if already connected
+        if (!error.message?.includes('already been initialized')) {
+          console.warn('⚠️ Failed to connect to auth emulator:', error);
+        }
+      }
+    }
   }
   return firebaseAuth;
 }
@@ -108,6 +122,21 @@ function getFirebaseDb(): Firestore {
   if (!firebaseDb) {
     const appInstance = getFirebaseApp();
     firebaseDb = getFirestore(appInstance);
+    
+    // Connect to emulator if environment variable is set (client-side only)
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST) {
+      const emulatorHost = process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST;
+      const [host, port] = emulatorHost.split(':');
+      try {
+        connectFirestoreEmulator(firebaseDb, host, parseInt(port, 10));
+        console.log(`✅ Firestore connected to emulator at ${host}:${port}`);
+      } catch (error: any) {
+        // Ignore error if already connected
+        if (!error.message?.includes('already been initialized')) {
+          console.warn('⚠️ Failed to connect to firestore emulator:', error);
+        }
+      }
+    }
   }
   return firebaseDb;
 }

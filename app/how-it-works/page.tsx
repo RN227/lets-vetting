@@ -1,48 +1,14 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
-import { getUserPets } from '@/lib/services/pets';
-import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 function HowItWorksPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const auth = useRequireAuth();
-  const petId = searchParams.get('petId');
-
-  // Redirect to chat if user already has pets and no petId provided
-  useEffect(() => {
-    async function checkExistingPets() {
-      if (!auth?.user) return;
-      if (petId) return; // If petId is provided, we'll use it
-
-      try {
-        const pets = await getUserPets(auth.user.uid);
-        if (pets.length > 0) {
-          router.push(`/chat?petId=${pets[0].id}`);
-        }
-      } catch (err) {
-        console.error('Error checking existing pets:', err);
-      }
-    }
-
-    checkExistingPets();
-  }, [auth?.user?.uid, router, petId]);
-
-  // Show loading screen while checking auth or redirecting
-  if (!auth) {
-    return <AuthLoadingScreen />;
-  }
 
   const handleContinue = () => {
-    if (petId) {
-      router.push(`/chat?petId=${petId}`);
-    } else {
-      // Fallback: try to get first pet
-      router.push('/chat');
-    }
+    // Navigate to onboarding for new users
+    router.push('/onboarding');
   };
 
   return (

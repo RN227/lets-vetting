@@ -11,6 +11,7 @@ export interface Pet {
   age: number;
   breed: string;
   weight: number;
+  gender: 'Male' | 'Female';
   createdAt: Date;
 }
 

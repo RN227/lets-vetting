@@ -7,6 +7,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  signInAnonymously,
+  linkWithPopup,
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -15,7 +17,10 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInAnonymously: () => Promise<void>;
+  upgradeAnonymousAccount: () => Promise<void>;
   signOut: () => Promise<void>;
+  isAnonymous: () => boolean;
 }
 
 // Create the context with undefined as initial value
@@ -32,10 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up Firebase Auth state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        const isAnon = user.isAnonymous;
         console.log('✅ Auth state: User signed in', {
           email: user.email,
           uid: user.uid,
           displayName: user.displayName,
+          isAnonymous: isAnon,
         });
       } else {
         console.log('❌ Auth state: No user signed in');
@@ -98,6 +105,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign in anonymously
+  const signInAnonymouslyUser = async () => {
+    try {
+      console.log('🔐 Starting anonymous sign-in...');
+      setLoading(true);
+      
+      const result = await signInAnonymously(auth);
+      
+      console.log('✅ Anonymous sign-in successful!', {
+        uid: result.user.uid,
+        isAnonymous: result.user.isAnonymous,
+      });
+      
+      // User state will be updated by onAuthStateChanged listener
+    } catch (error: any) {
+      console.error('❌ Error during anonymous sign-in:', error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Upgrade anonymous account to permanent Google account
+  const upgradeAnonymousAccount = async () => {
+    try {
+      if (!user || !user.isAnonymous) {
+        throw new Error('No anonymous user to upgrade');
+      }
+
+      console.log('🔐 Upgrading anonymous account to Google...');
+      setLoading(true);
+
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      // Link the Google credential to the anonymous account
+      const credential = await linkWithPopup(auth.currentUser!, provider);
+      
+      console.log('✅ Account upgraded successfully!', {
+        email: credential.user.email,
+        uid: credential.user.uid,
+        displayName: credential.user.displayName,
+        isAnonymous: credential.user.isAnonymous,
+      });
+
+      // User state will be updated by onAuthStateChanged listener
+    } catch (error: any) {
+      console.error('❌ Error upgrading account:', error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Check if current user is anonymous
+  const isAnonymous = (): boolean => {
+    return user?.isAnonymous ?? false;
+  };
+
   // Sign out
   const signOut = async () => {
     try {
@@ -116,7 +182,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     signInWithGoogle,
+    signInAnonymously: signInAnonymouslyUser,
+    upgradeAnonymousAccount,
     signOut,
+    isAnonymous,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

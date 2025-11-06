@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate pet data (either passed from client or fetch from Firestore)
-    let pet: { name: string; species: string; age: number; breed: string; weight: number };
+    let pet: { name: string; species: string; age: number; breed: string; weight: number; gender: string };
     if (petData) {
       // Use pet data passed from client (preferred to avoid server-side Firestore auth)
       pet = petData;
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
         age: fetchedPet.age,
         breed: fetchedPet.breed,
         weight: fetchedPet.weight,
+        gender: fetchedPet.gender,
       };
     }
 
@@ -103,6 +104,7 @@ CURRENT PET INFORMATION:
 - Age: ${pet.age} ${pet.age === 1 ? 'year' : 'years'} old
 - Breed: ${pet.breed}
 - Weight: ${pet.weight} kg
+- Gender: ${pet.gender}
 
 GUIDELINES:
 1. Be empathetic and supportive - pet owners are often worried

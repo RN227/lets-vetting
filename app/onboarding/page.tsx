@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
-import { createPet, getUserPets } from '@/lib/services/pets';
+import { useAuth } from '@/lib/auth-context';
+import { createPet } from '@/lib/services/pets';
 
 // Top 50 most common dog breeds
 const DOG_BREEDS = [
@@ -36,7 +36,7 @@ const CAT_BREEDS = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const auth = useRequireAuth();
+  const { user, loading: authLoading, signInAnonymously } = useAuth();
   const breedInputRef = useRef<HTMLInputElement>(null);
   const breedListRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +46,7 @@ export default function OnboardingPage() {
     age: '',
     breed: '',
     weight: '',
+    gender: '' as 'Male' | 'Female' | '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -54,23 +55,23 @@ export default function OnboardingPage() {
   const [showBreedSuggestions, setShowBreedSuggestions] = useState(false);
   const [filteredBreeds, setFilteredBreeds] = useState<string[]>([]);
 
-  // Redirect to chat if user already has pets
+  // Sign in anonymously on page load if not authenticated
   useEffect(() => {
-    async function checkExistingPets() {
-      if (!auth?.user) return;
-
-      try {
-        const pets = await getUserPets(auth.user.uid);
-        if (pets.length > 0) {
-          router.push(`/chat?petId=${pets[0].id}`);
+    async function ensureAuthentication() {
+      if (authLoading) return; // Wait for auth to finish loading
+      
+      if (!user) {
+        try {
+          await signInAnonymously();
+        } catch (err) {
+          console.error('Error signing in anonymously:', err);
+          setError('Failed to initialize. Please try again.');
         }
-      } catch (err) {
-        console.error('Error checking existing pets:', err);
       }
     }
 
-    checkExistingPets();
-  }, [auth?.user?.uid, router]);
+    ensureAuthentication();
+  }, [authLoading, user, signInAnonymously]);
 
   // Update breed suggestions when species or breed input changes
   useEffect(() => {
@@ -112,12 +113,19 @@ export default function OnboardingPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Show loading screen while checking auth or redirecting
-  if (!auth) {
-    return <AuthLoadingScreen />;
+  // Show loading screen while checking auth or signing in anonymously
+  if (authLoading || !user) {
+    return (
+      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4">
+            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
+          </div>
+          <p className="text-white text-sm">Loading</p>
+        </div>
+      </div>
+    );
   }
-
-  const { user } = auth;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +152,10 @@ export default function OnboardingPage() {
       setError('Please enter a valid weight');
       return;
     }
+    if (!formData.gender) {
+      setError('Please select your pet\'s gender');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -154,13 +166,14 @@ export default function OnboardingPage() {
         age: Number(formData.age),
         breed: formData.breed.trim(),
         weight: Number(formData.weight),
+        gender: formData.gender as 'Male' | 'Female',
       };
 
       const newPet = await createPet(user.uid, petData);
       setSuccess(true);
 
       setTimeout(() => {
-        router.push(`/how-it-works?petId=${newPet.id}`);
+        router.push(`/chat?petId=${newPet.id}`);
       }, 1000);
     } catch (err) {
       console.error('Error saving pet:', err);
@@ -341,6 +354,47 @@ export default function OnboardingPage() {
                   placeholder="e.g., 15"
                   disabled={loading}
                 />
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label className="block text-xs font-medium text-[#073F6C] mb-2">
+                Gender
+              </label>
+              <div className="flex gap-8">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="Male"
+                    checked={formData.gender === 'Male'}
+                    onChange={(e) => {
+                      setFormData({ ...formData, gender: e.target.value as 'Male' });
+                    }}
+                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
+                    disabled={loading}
+                  />
+                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
+                    Male
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="Female"
+                    checked={formData.gender === 'Female'}
+                    onChange={(e) => {
+                      setFormData({ ...formData, gender: e.target.value as 'Female' });
+                    }}
+                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
+                    disabled={loading}
+                  />
+                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
+                    Female
+                  </span>
+                </label>
               </div>
             </div>
 

@@ -70,6 +70,7 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
         age: data.age,
         breed: data.breed,
         weight: data.weight,
+        gender: data.gender || 'Male', // Default to 'Male' for backward compatibility
         createdAt: data.createdAt?.toDate() || new Date(),
       } as Pet;
     });
@@ -103,6 +104,7 @@ export async function getPetById(petId: string): Promise<Pet | null> {
       age: data.age,
       breed: data.breed,
       weight: data.weight,
+      gender: data.gender || 'Male', // Default to 'Male' for backward compatibility
       createdAt: data.createdAt?.toDate() || new Date(),
     } as Pet;
   } catch (error) {
