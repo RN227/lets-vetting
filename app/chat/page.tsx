@@ -639,7 +639,7 @@ function ChatPageContent() {
           </form>
 
           {/* Helper text */}
-          <p className="text-xs text-white/70 mt-4 text-center leading-relaxed break-words">
+          <p className="text-[10px] text-white/70 mt-4 text-center whitespace-nowrap">
             AI guidance only • Always consult a veterinarian for serious concerns
           </p>
         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getUserPets } from '@/lib/services/pets';
+import { auth } from '@/lib/firebase';
 
 function LoginPageContent() {
   const { user, loading, signInWithGoogle, upgradeAnonymousAccount, isAnonymous } = useAuth();
@@ -19,9 +20,15 @@ function LoginPageContent() {
 
   useEffect(() => {
     async function checkUserPets() {
-      // Only redirect if user is authenticated, not anonymous, auth is not loading, and we haven't redirected yet
-      if (user && !loading && !user.isAnonymous && !hasRedirected) {
-        console.log('Redirecting after sign-in:', { uid: user.uid, email: user.email, isAnonymous: user.isAnonymous });
+      // Only redirect if user is authenticated, not anonymous, and we haven't redirected yet
+      // Don't check loading state here as it might not reset properly after upgrade
+      if (user && !user.isAnonymous && !hasRedirected) {
+        console.log('Redirecting after sign-in:', { 
+          uid: user.uid, 
+          email: user.email, 
+          isAnonymous: user.isAnonymous,
+          loading: loading 
+        });
         
         // Reset signing in state when user is authenticated
         if (isSigningIn) {
@@ -58,8 +65,8 @@ function LoginPageContent() {
       }
     }
 
-    // Only check if we have a user and auth is not loading
-    if (user && !loading) {
+    // Check if we have a user (don't wait for loading to be false)
+    if (user) {
       checkUserPets();
     }
   }, [user, loading, router, isSigningIn, hasRedirected, urlPetId, urlConversationId]);
@@ -81,13 +88,54 @@ function LoginPageContent() {
         // No need to migrate data - Firebase handles it automatically
         console.log('Anonymous account upgraded successfully');
         
-        // The useEffect will handle redirect when auth state updates
-        // No need to force redirect here
+        // Wait a moment for auth state to update, then check if we need to redirect
+        setTimeout(async () => {
+          const currentUser = auth.currentUser;
+          if (currentUser && !currentUser.isAnonymous && !hasRedirected) {
+            console.log('Force redirect after upgrade');
+            try {
+              const pets = await getUserPets(currentUser.uid);
+              if (pets.length > 0) {
+                const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
+                let redirectUrl = `/chat?petId=${petId}`;
+                if (urlConversationId) {
+                  redirectUrl += `&conversationId=${urlConversationId}`;
+                }
+                router.replace(redirectUrl);
+              } else {
+                router.replace('/onboarding');
+              }
+            } catch (err) {
+              console.error('Error in force redirect:', err);
+            }
+          }
+        }, 500);
       } else {
         // Regular sign in for new users
         await signInWithGoogle();
         
-        // The useEffect will handle redirect when auth state updates
+        // Wait a moment for auth state to update, then check if we need to redirect
+        setTimeout(async () => {
+          const currentUser = auth.currentUser;
+          if (currentUser && !currentUser.isAnonymous && !hasRedirected) {
+            console.log('Force redirect after sign-in');
+            try {
+              const pets = await getUserPets(currentUser.uid);
+              if (pets.length > 0) {
+                const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
+                let redirectUrl = `/chat?petId=${petId}`;
+                if (urlConversationId) {
+                  redirectUrl += `&conversationId=${urlConversationId}`;
+                }
+                router.replace(redirectUrl);
+              } else {
+                router.replace('/onboarding');
+              }
+            } catch (err) {
+              console.error('Error in force redirect:', err);
+            }
+          }
+        }, 500);
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
