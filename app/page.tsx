@@ -61,7 +61,7 @@ export default function Home() {
           style={{ maxWidth: '280px', height: 'auto' }}
         />
         <p className="text-white text-center text-sm font-light mt-1 px-4 whitespace-nowrap">
-          Instant AI guidance for your pet's health concerns
+          Instant AI guidance for your pet&apos;s health concerns
         </p>
       </div>
 
