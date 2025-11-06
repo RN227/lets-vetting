@@ -424,7 +424,7 @@ function ChatPageContent() {
       </header>
 
       {/* Chat Messages Area */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-8">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-8 pb-32">
         <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto space-y-5 pb-4">
           {messages.length === 0 ? (
             /* Empty state */
@@ -570,7 +570,7 @@ function ChatPageContent() {
       </main>
 
       {/* Fixed Bottom Input Area */}
-      <footer className="bg-[#073F6C] border-t border-white/10 px-4 sm:px-6 py-5 flex-shrink-0 safe-area-bottom">
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#073F6C] border-t border-white/10 px-4 sm:px-6 py-5 safe-area-bottom z-10">
         <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
           {/* Error Message */}
           {error && (
