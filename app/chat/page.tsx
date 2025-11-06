@@ -823,7 +823,7 @@ function ChatPageContent() {
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="px-6 h-[48px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
+              className="px-6 h-[48px] min-w-[80px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
             >
               {sending ? (
                 <>
