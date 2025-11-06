@@ -198,8 +198,8 @@ export default function AddPetPage() {
   const availableBreeds = formData.species === 'dog' ? DOG_BREEDS : CAT_BREEDS;
 
   return (
-    <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 sm:px-6 py-6 overflow-hidden animate-fade-in">
-      <div className="w-full max-w-2xl lg:max-w-3xl overflow-y-auto max-h-full">
+    <div className="min-h-screen bg-[#073F6C] flex flex-col px-4 sm:px-6 py-4 sm:py-6 animate-fade-in" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 1rem)' }}>
+      <div className="w-full max-w-2xl lg:max-w-3xl mx-auto flex-1 flex flex-col min-h-0">
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-white mb-2">
@@ -210,9 +210,9 @@ export default function AddPetPage() {
           </p>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form Card - Scrollable */}
+        <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md flex-1 flex flex-col min-h-0 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
             {/* Error Message */}
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl fade-in">
@@ -269,6 +269,11 @@ export default function AddPetPage() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onFocus={(e) => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 300);
+                }}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 placeholder="e.g., Max, Bella"
                 disabled={loading}
@@ -332,6 +337,11 @@ export default function AddPetPage() {
                   step="0.5"
                   value={formData.age}
                   onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="e.g., 3"
                   disabled={loading}
@@ -350,6 +360,11 @@ export default function AddPetPage() {
                   step="0.1"
                   value={formData.weight}
                   onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="e.g., 15"
                   disabled={loading}
@@ -409,7 +424,10 @@ export default function AddPetPage() {
                 id="breed"
                 value={formData.breed}
                 onChange={(e) => handleBreedChange(e.target.value)}
-                onFocus={() => {
+                onFocus={(e) => {
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }, 300);
                   if (formData.species && formData.breed.trim()) {
                     setShowBreedSuggestions(true);
                   }
@@ -440,7 +458,7 @@ export default function AddPetPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-3">
+            <div className="pt-3 mt-auto pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 1rem)' }}>
               <button
                 type="submit"
                 disabled={loading}
