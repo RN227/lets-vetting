@@ -29,6 +29,7 @@ function ChatPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [selectedPills, setSelectedPills] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const petId = searchParams.get('petId');
@@ -191,14 +192,31 @@ function ChatPageContent() {
   };
 
   const handlePillClick = (pill: string) => {
-    // Autofill the input with the pill text, overwriting any existing content
-    setMessage(pill);
-    // Focus the textarea and select all text so user can see it was replaced
-    // User can immediately start typing to change it or just send
+    // Don't allow deselection - if already selected, do nothing
+    if (selectedPills.includes(pill)) {
+      return;
+    }
+
+    // Add pill to selected pills
+    setSelectedPills([...selectedPills, pill]);
+
+    // Append pill text to existing message
+    const currentText = message.trim();
+    if (currentText === '') {
+      // If input is empty, just set the pill text
+      setMessage(pill);
+    } else {
+      // If input has text, append with comma separator
+      setMessage(`${currentText}, ${pill}`);
+    }
+
+    // Focus the textarea
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
-        textareaRef.current.select();
+        // Move cursor to end of text
+        const length = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(length, length);
       }
     }, 0);
   };
@@ -316,6 +334,7 @@ function ChatPageContent() {
 
     const userMessage = message.trim();
     setMessage('');
+    setSelectedPills([]); // Clear selected pills when message is sent
     setSending(true);
     setError(null);
 
@@ -673,19 +692,23 @@ function ChatPageContent() {
           {messages.length === 0 && (
             <div className="mb-3">
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
-                {conditionPills.map((pill) => (
-                  <button
-                    key={pill}
-                    onClick={() => handlePillClick(pill)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                      message.trim() === pill
-                        ? 'bg-white text-[#073F6C] border-2 border-[#073F6C]'
-                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                    }`}
-                  >
-                    {pill}
-                  </button>
-                ))}
+                {conditionPills.map((pill) => {
+                  const isSelected = selectedPills.includes(pill);
+                  return (
+                    <button
+                      key={pill}
+                      onClick={() => handlePillClick(pill)}
+                      disabled={isSelected}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                        isSelected
+                          ? 'bg-white text-[#073F6C] border-2 border-[#073F6C] cursor-default'
+                          : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                      }`}
+                    >
+                      {pill}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
