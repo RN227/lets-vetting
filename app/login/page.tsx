@@ -88,54 +88,86 @@ function LoginPageContent() {
         // No need to migrate data - Firebase handles it automatically
         console.log('Anonymous account upgraded successfully');
         
-        // Wait a moment for auth state to update, then check if we need to redirect
+        // Wait a moment for auth state to update, then force redirect
         setTimeout(async () => {
           const currentUser = auth.currentUser;
-          if (currentUser && !currentUser.isAnonymous && !hasRedirected) {
-            console.log('Force redirect after upgrade');
+          if (currentUser && !currentUser.isAnonymous) {
+            console.log('Force redirect after upgrade', { 
+              uid: currentUser.uid, 
+              isAnonymous: currentUser.isAnonymous,
+              hasRedirected 
+            });
             try {
               const pets = await getUserPets(currentUser.uid);
+              console.log('Found pets in force redirect:', pets.length);
+              
               if (pets.length > 0) {
                 const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
                 let redirectUrl = `/chat?petId=${petId}`;
                 if (urlConversationId) {
                   redirectUrl += `&conversationId=${urlConversationId}`;
                 }
-                router.replace(redirectUrl);
+                console.log('Force redirecting to:', redirectUrl);
+                setHasRedirected(true);
+                // Use window.location for more reliable redirect
+                window.location.href = redirectUrl;
               } else {
-                router.replace('/onboarding');
+                console.log('No pets found, redirecting to onboarding');
+                setHasRedirected(true);
+                window.location.href = '/onboarding';
               }
             } catch (err) {
               console.error('Error in force redirect:', err);
             }
+          } else {
+            console.log('Force redirect skipped:', { 
+              hasUser: !!currentUser, 
+              isAnonymous: currentUser?.isAnonymous 
+            });
           }
-        }, 500);
+        }, 1000);
       } else {
         // Regular sign in for new users
         await signInWithGoogle();
         
-        // Wait a moment for auth state to update, then check if we need to redirect
+        // Wait a moment for auth state to update, then force redirect
         setTimeout(async () => {
           const currentUser = auth.currentUser;
-          if (currentUser && !currentUser.isAnonymous && !hasRedirected) {
-            console.log('Force redirect after sign-in');
+          if (currentUser && !currentUser.isAnonymous) {
+            console.log('Force redirect after sign-in', { 
+              uid: currentUser.uid, 
+              isAnonymous: currentUser.isAnonymous,
+              hasRedirected 
+            });
             try {
               const pets = await getUserPets(currentUser.uid);
+              console.log('Found pets in force redirect:', pets.length);
+              
               if (pets.length > 0) {
                 const petId = urlPetId && pets.find(p => p.id === urlPetId) ? urlPetId : pets[0].id;
                 let redirectUrl = `/chat?petId=${petId}`;
                 if (urlConversationId) {
                   redirectUrl += `&conversationId=${urlConversationId}`;
                 }
-                router.replace(redirectUrl);
+                console.log('Force redirecting to:', redirectUrl);
+                setHasRedirected(true);
+                // Use window.location for more reliable redirect
+                window.location.href = redirectUrl;
               } else {
-                router.replace('/onboarding');
+                console.log('No pets found, redirecting to onboarding');
+                setHasRedirected(true);
+                window.location.href = '/onboarding';
               }
             } catch (err) {
               console.error('Error in force redirect:', err);
             }
+          } else {
+            console.log('Force redirect skipped:', { 
+              hasUser: !!currentUser, 
+              isAnonymous: currentUser?.isAnonymous 
+            });
           }
-        }, 500);
+        }, 1000);
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
