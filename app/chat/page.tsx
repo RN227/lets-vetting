@@ -35,23 +35,13 @@ function ChatPageContent() {
   const existingConversationId = searchParams.get('conversationId');
   const isAnon = isAnonymous();
 
-  // Common pet health conditions for quick selection
+  // Common pet health conditions for quick selection (max 5)
   const conditionPills = [
-    'Not eating',
-    'Vomiting',
-    'Diarrhea',
-    'Lethargy',
-    'Coughing',
-    'Sneezing',
-    'Itching',
-    'Limping',
-    'Eye discharge',
-    'Ear problems',
-    'Skin issues',
-    'Behavior changes',
-    'Weight loss',
-    'Excessive thirst',
-    'Difficulty breathing',
+    'Not eating or reduced appetite',
+    'Vomiting or nausea',
+    'Diarrhea or loose stools',
+    'Lethargy or lack of energy',
+    'Coughing or breathing issues',
   ];
 
   // Ticker words for loading state
