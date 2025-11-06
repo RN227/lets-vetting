@@ -329,7 +329,7 @@ function ChatPageContent() {
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
       // Store contextual pills for this message
-      if (pills.length > 0) {
+      if (pills && pills.length > 0) {
         setContextualPills((prev) => ({
           ...prev,
           [tempAssistantMessage.id]: pills.slice(0, 3),
@@ -599,7 +599,7 @@ function ChatPageContent() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}
                 >
                   <div
-                    className={`max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] rounded-xl px-5 py-4 shadow-md break-words ${
+                    className={`max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] rounded-xl px-5 py-4 shadow-md break-words w-fit ${
                       msg.role === 'user'
                         ? 'bg-white border-2 border-[#073F6C] text-[#073F6C]'
                         : 'bg-white text-[#073F6C]'
@@ -690,7 +690,7 @@ function ChatPageContent() {
                                 <button
                                   key={index}
                                   onClick={() => handleContextualPillClick(pill)}
-                                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap bg-[#073F6C]/10 text-[#073F6C] border border-[#073F6C]/20 hover:bg-[#073F6C]/20"
                                 >
                                   {pill}
                                 </button>
@@ -823,7 +823,7 @@ function ChatPageContent() {
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="px-6 h-[48px] min-w-[80px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
+              className="px-6 h-[48px] w-[80px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
             >
               {sending ? (
                 <>
