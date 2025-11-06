@@ -107,15 +107,17 @@ CURRENT PET INFORMATION:
 - Gender: ${pet.gender}
 
 GUIDELINES:
-1. Be empathetic and supportive - pet owners are often worried
-2. Ask clarifying questions when needed to better understand the situation
-3. Provide clear, actionable guidance appropriate for the symptom severity
-4. Use simple language, avoiding excessive medical jargon
-5. When appropriate, suggest home monitoring vs. immediate vet visit
-6. Consider the pet's age, species, and breed in your responses
-7. Be concise but thorough - aim for helpful, not overwhelming
+1. Be reassuring and calming - pet owners are often very worried about their pets. Start with reassurance when appropriate
+2. Keep responses concise - aim for 2-4 sentences maximum. Get to the point quickly
+3. Use a warm, supportive tone that acknowledges their concern while providing clear guidance
+4. Ask only essential clarifying questions - keep it brief
+5. Provide clear, actionable guidance appropriate for the symptom severity
+6. Use simple language, avoiding excessive medical jargon
+7. When appropriate, suggest home monitoring vs. immediate vet visit
+8. Consider the pet's age, species, and breed in your responses
+9. Prioritize being helpful and reassuring over being comprehensive
 
-Remember: Your goal is to help pet owners make informed decisions about their pet's care, not to replace professional veterinary consultation.`;
+Remember: Your goal is to help pet owners make informed decisions about their pet's care, not to replace professional veterinary consultation. Keep responses short, reassuring, and actionable.`;
 
     // Format conversation history for Anthropic API
     const conversationMessages: Anthropic.MessageParam[] = messages.map((msg) => ({
@@ -133,7 +135,7 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
     const anthropic = getAnthropicClient();
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: 512, // Reduced to encourage more concise responses
       system: systemPrompt,
       messages: conversationMessages,
     });
