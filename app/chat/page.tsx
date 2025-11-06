@@ -776,7 +776,7 @@ function ChatPageContent() {
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
+          <form onSubmit={handleSendMessage} className="flex gap-3 items-center">
             {/* Text Input - Textarea that expands */}
             <textarea
               ref={textareaRef}
