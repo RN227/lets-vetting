@@ -19,10 +19,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "conversationId",
-          "order": "ASCENDING"
-        },
-        {
           "fieldPath": "role",
           "order": "ASCENDING"
         },
