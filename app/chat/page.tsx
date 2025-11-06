@@ -29,7 +29,6 @@ function ChatPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
-  const [selectedPills, setSelectedPills] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const petId = searchParams.get('petId');
@@ -75,11 +74,11 @@ function ChatPageContent() {
   // Auto-resize textarea as user types
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '48px'; // Reset to minimum height
       const scrollHeight = textareaRef.current.scrollHeight;
       // Set max height to ~6 lines (approximately 150px)
       const maxHeight = 150;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
+      textareaRef.current.style.height = `${Math.max(48, Math.min(scrollHeight, maxHeight))}px`;
     }
   }, [message]);
 
@@ -202,25 +201,12 @@ function ChatPageContent() {
   };
 
   const handlePillClick = (pill: string) => {
-    if (selectedPills.includes(pill)) {
-      // Deselect if already selected
-      setSelectedPills(selectedPills.filter((p) => p !== pill));
-    } else {
-      // Add to selected pills
-      setSelectedPills([...selectedPills, pill]);
-    }
-  };
-
-  const handleSendPills = async () => {
-    if (selectedPills.length === 0 || !petId || !pet) return;
-
-    const userMessage = `${pet.name} is experiencing: ${selectedPills.join(', ')}.`;
-    setSelectedPills([]);
-    setMessage('');
-    setSending(true);
-    setError(null);
-
-    await sendMessage(userMessage);
+    // Autofill the input with the pill text, overwriting any existing content
+    setMessage(pill);
+    // Focus the textarea so user can edit or just send
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
   const sendMessage = async (messageText: string) => {
@@ -545,36 +531,6 @@ function ChatPageContent() {
             </div>
           )}
 
-          {/* Condition Pills - show when no messages or when user hasn't sent first message */}
-          {messages.length === 0 && (
-            <div className="mt-6 mb-8">
-              <p className="text-white/80 text-sm mb-4 px-1">Quick start - select conditions:</p>
-              <div className="flex flex-wrap gap-2">
-                {conditionPills.map((pill) => (
-                  <button
-                    key={pill}
-                    onClick={() => handlePillClick(pill)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedPills.includes(pill)
-                        ? 'bg-white text-[#073F6C] border-2 border-[#073F6C]'
-                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                    }`}
-                  >
-                    {pill}
-                  </button>
-                ))}
-              </div>
-              {selectedPills.length > 0 && (
-                <button
-                  onClick={handleSendPills}
-                  disabled={sending}
-                  className="mt-4 px-6 py-3 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Send {selectedPills.length} {selectedPills.length === 1 ? 'condition' : 'conditions'}
-                </button>
-              )}
-            </div>
-          )}
 
           {messages.length > 0 && (
             /* Messages */
@@ -719,6 +675,27 @@ function ChatPageContent() {
             </div>
           )}
 
+          {/* Condition Pills - horizontal scrollable list above input */}
+          {messages.length === 0 && (
+            <div className="mb-3">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+                {conditionPills.map((pill) => (
+                  <button
+                    key={pill}
+                    onClick={() => handlePillClick(pill)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                      message.trim() === pill
+                        ? 'bg-white text-[#073F6C] border-2 border-[#073F6C]'
+                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                    }`}
+                  >
+                    {pill}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
             {/* Text Input - Textarea that expands */}
             <textarea
@@ -757,13 +734,16 @@ function ChatPageContent() {
               }}
               className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed break-words resize-none overflow-y-auto min-h-[48px] max-h-[150px]"
               autoComplete="off"
+              style={{ 
+                lineHeight: '1.5'
+              }}
             />
 
             {/* Send Button */}
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="px-6 py-3 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+              className="px-6 h-[48px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
             >
               {sending ? (
                 <>
