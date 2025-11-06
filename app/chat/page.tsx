@@ -28,6 +28,7 @@ function ChatPageContent() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   const petId = searchParams.get('petId');
   const existingConversationId = searchParams.get('conversationId');
@@ -49,6 +50,44 @@ function ChatPageContent() {
 
     return () => clearInterval(interval);
   }, [sending, tickerWords.length]);
+
+  // Handle viewport height changes when keyboard opens/closes
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      // Use visual viewport if available (better for mobile keyboards)
+      if (window.visualViewport) {
+        setViewportHeight(window.visualViewport.height);
+      } else {
+        setViewportHeight(window.innerHeight);
+      }
+    };
+
+    // Set initial height
+    updateViewportHeight();
+
+    // Listen for viewport resize events (keyboard open/close)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateViewportHeight);
+      window.visualViewport.addEventListener('scroll', updateViewportHeight);
+    } else {
+      window.addEventListener('resize', updateViewportHeight);
+    }
+
+    // Also listen for orientation changes
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateViewportHeight, 100);
+    });
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateViewportHeight);
+        window.visualViewport.removeEventListener('scroll', updateViewportHeight);
+      } else {
+        window.removeEventListener('resize', updateViewportHeight);
+      }
+      window.removeEventListener('orientationchange', updateViewportHeight);
+    };
+  }, []);
 
   // Initialize: Fetch pet and create/load conversation
   useEffect(() => {
@@ -326,7 +365,14 @@ function ChatPageContent() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#073F6C] overflow-hidden safe-area-top">
+    <div 
+      className="flex flex-col w-screen bg-[#073F6C] overflow-hidden safe-area-top" 
+      style={{ 
+        minHeight: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        maxHeight: viewportHeight ? `${viewportHeight}px` : '100dvh'
+      }}
+    >
       {/* Sign In Banner - Show for anonymous users */}
       {isAnon && (
         <div className="bg-yellow-500 border-b border-yellow-600 px-4 sm:px-6 py-3 flex-shrink-0">
@@ -602,6 +648,26 @@ function ChatPageContent() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Describe symptoms..."
               disabled={sending}
+              onBlur={() => {
+                // Force viewport update when keyboard closes
+                setTimeout(() => {
+                  if (window.visualViewport) {
+                    setViewportHeight(window.visualViewport.height);
+                  } else {
+                    setViewportHeight(window.innerHeight);
+                  }
+                }, 100);
+              }}
+              onFocus={() => {
+                // Update viewport when keyboard opens
+                setTimeout(() => {
+                  if (window.visualViewport) {
+                    setViewportHeight(window.visualViewport.height);
+                  } else {
+                    setViewportHeight(window.innerHeight);
+                  }
+                }, 100);
+              }}
               className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed break-words"
               autoComplete="off"
             />

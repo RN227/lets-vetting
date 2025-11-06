@@ -47,11 +47,12 @@ html {
   height: 100%;
   width: 100%;
   position: fixed;
+  background: #073F6C; /* Match chat background to prevent white flash */
 }
 
 body {
   color: var(--text-primary);
-  background: var(--surface);
+  background: #073F6C; /* Match chat background to prevent white flash */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
