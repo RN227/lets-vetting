@@ -139,14 +139,14 @@ Remember: Your goal is to help pet owners make informed decisions about their pe
     }
 
     // Generate contextual pills based on the assistant's response
-    // Ask Claude to suggest up to 3 follow-up questions or actions
-    const pillsPrompt = `Based on your previous response about ${pet.name}'s health, suggest up to 3 short, actionable follow-up questions or actions that would help the pet owner provide more information or take next steps. Each suggestion should be:
+    // Ask Claude to suggest up to 3 follow-up questions the USER might want to ask next
+    const pillsPrompt = `Based on your previous response about ${pet.name}'s health, suggest up to 3 short follow-up questions that the pet owner might want to ask next. These should be questions the USER would ask, not questions you want to ask them. Each suggestion should be:
 - Short (3-6 words max)
-- Actionable and specific
+- A question the pet owner might naturally ask next
 - Relevant to the conversation context
-- Written as a question or action phrase
+- Written from the pet owner's perspective (e.g., "What should I do if...", "When should I...", "How can I...")
 
-Return ONLY a JSON array of strings, nothing else. Example: ["How long has this been happening?", "Is there any discharge?", "What is their appetite like?"]
+Return ONLY a JSON array of strings, nothing else. Example: ["What should I do if it gets worse?", "When should I see a vet?", "How can I help at home?"]
 
 Your response: ${assistantMessage.text}
 
@@ -157,7 +157,7 @@ Suggestions:`;
       const pillsResponse = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 100,
-        system: 'You are a helpful assistant that generates short, actionable follow-up questions for pet health conversations. Return only a JSON array of strings.',
+        system: 'You are a helpful assistant that generates short follow-up questions that pet owners might want to ask next in a conversation. These should be questions the USER would ask (like "What should I do if...", "When should I..."), NOT questions you want to ask them. Return only a JSON array of strings.',
         messages: [{
           role: 'user',
           content: pillsPrompt,
