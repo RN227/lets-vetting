@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { getUserPets } from '@/lib/services/pets';
 
 export default function Home() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -12,9 +13,26 @@ export default function Home() {
 
   // Redirect authenticated non-anonymous users to chat or onboarding
   useEffect(() => {
-    if (user && !loading && !user.isAnonymous) {
-      router.push('/onboarding');
+    async function checkUserPets() {
+      if (user && !loading && !user.isAnonymous) {
+        try {
+          const pets = await getUserPets(user.uid);
+          if (pets.length > 0) {
+            // User has pets, redirect to chat
+            router.push(`/chat?petId=${pets[0].id}`);
+          } else {
+            // User has no pets, redirect to onboarding
+            router.push('/onboarding');
+          }
+        } catch (err) {
+          console.error('Error checking user pets:', err);
+          // On error, redirect to onboarding
+          router.push('/onboarding');
+        }
+      }
     }
+
+    checkUserPets();
   }, [user, loading, router]);
 
   const handleAlreadyHaveAccount = () => {
