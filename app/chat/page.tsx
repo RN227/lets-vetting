@@ -13,6 +13,20 @@ import {
 } from '@/lib/services/conversations';
 import { useAuth } from '@/lib/auth-context';
 import type { Pet, Message } from '@/types';
+import {
+  TextField,
+  Button,
+  CircularProgress,
+  Box,
+  Typography,
+  Alert,
+  Chip,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import SendIcon from '@mui/icons-material/Send';
 
 function ChatPageContent() {
   // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
@@ -416,14 +430,14 @@ function ChatPageContent() {
   // Show loading screen while checking auth
   if (authLoading || !user) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
@@ -438,33 +452,46 @@ function ChatPageContent() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
   if (error && !pet) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
-        <div className="max-w-md w-full bg-white rounded-xl p-8 shadow-md">
-          <div className="text-center">
-            <h1 className="text-lg font-bold text-[#073F6C] mb-4">Error</h1>
-            <p className="text-sm text-gray-600 mb-6">{error || 'Pet not found'}</p>
-            <button
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
+        <Box className="max-w-md w-full bg-white rounded-xl p-4 shadow-md">
+          <Box className="text-center">
+            <Typography variant="h3" sx={{ color: '#073F6C', mb: 2, fontWeight: 700 }}>
+              Error
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+              {error || 'Pet not found'}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
               onClick={() => router.push('/onboarding')}
-              className="w-full px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md"
+              sx={{
+                borderRadius: 3,
+                py: 1.5,
+                textTransform: 'uppercase',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+              }}
             >
               Back to Onboarding
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
@@ -632,56 +659,42 @@ function ChatPageContent() {
                     {/* Feedback buttons for assistant messages */}
                     {msg.role === 'assistant' && (
                       <>
-                        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-gray-200">
-                          <button
-                            onClick={() => handleFeedback(msg.id, 'up')}
-                            className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
-                              msg.feedback === 'up'
-                                ? 'bg-[#073F6C] text-white'
-                                : 'text-gray-500 hover:bg-gray-100'
-                            }`}
-                            title="Helpful"
-                            aria-label="Mark as helpful"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2.5, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                          <Tooltip title="Helpful">
+                            <IconButton
+                              onClick={() => handleFeedback(msg.id, 'up')}
+                              size="small"
+                              sx={{
+                                px: 1.5,
+                                py: 1,
+                                borderRadius: 2,
+                                ...(msg.feedback === 'up'
+                                  ? { bgcolor: '#073F6C', color: 'white', '&:hover': { bgcolor: '#073F6C' } }
+                                  : { color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }),
+                              }}
+                              aria-label="Mark as helpful"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(msg.id, 'down')}
-                            className={`px-3 py-2 rounded-xl transition-all duration-200 touch-target flex items-center justify-center ${
-                              msg.feedback === 'down'
-                                ? 'bg-[#073F6C] text-white'
-                                : 'text-gray-500 hover:bg-gray-100'
-                            }`}
-                            title="Not helpful"
-                            aria-label="Mark as not helpful"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                              <ThumbUpIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Not helpful">
+                            <IconButton
+                              onClick={() => handleFeedback(msg.id, 'down')}
+                              size="small"
+                              sx={{
+                                px: 1.5,
+                                py: 1,
+                                borderRadius: 2,
+                                ...(msg.feedback === 'down'
+                                  ? { bgcolor: '#073F6C', color: 'white', '&:hover': { bgcolor: '#073F6C' } }
+                                  : { color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }),
+                              }}
+                              aria-label="Mark as not helpful"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
-                              />
-                            </svg>
-                          </button>
-                        </div>
+                              <ThumbDownIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                         {/* Contextual pills for assistant messages */}
                         {contextualPills[msg.id] && contextualPills[msg.id].length > 0 && (
                           <div className="mt-4 pt-4 border-t border-gray-200">
@@ -706,20 +719,16 @@ function ChatPageContent() {
 
               {/* Loading indicator */}
               {sending && (
-                <div className="flex justify-start">
-                  <div className="max-w-[70%] rounded-xl px-5 py-4 bg-white shadow-md">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-[#073F6C] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                      <span className="text-xs text-gray-500 min-w-[100px]">
+                <Box className="flex justify-start">
+                  <Box className="max-w-[70%] rounded-xl px-5 py-4 bg-white shadow-md">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={16} sx={{ color: '#073F6C' }} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: 100 }}>
                         {tickerWords[tickerIndex]}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
               )}
             </>
           )}
@@ -731,55 +740,68 @@ function ChatPageContent() {
         <div className="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-white/10 border border-white/20 rounded-xl fade-in">
-              <div className="flex items-start gap-3">
-                <svg
-                  className="w-4 h-4 text-white flex-shrink-0 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p className="text-white text-xs font-medium leading-relaxed">{error}</p>
-              </div>
-            </div>
+            <Alert
+              severity="error"
+              sx={{
+                mb: 2,
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: 3,
+                '& .MuiAlert-icon': {
+                  color: 'white',
+                },
+                '& .MuiAlert-message': {
+                  color: 'white',
+                  fontSize: '0.75rem',
+                },
+              }}
+            >
+              {error}
+            </Alert>
           )}
 
           {/* Condition Pills - horizontal scrollable list above input */}
           {messages.length === 0 && (
-            <div className="mb-3">
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+            <Box sx={{ mb: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
                 {conditionPills.map((pill) => {
                   const isSelected = selectedPills.includes(pill);
                   return (
-                    <button
+                    <Chip
                       key={pill}
+                      label={pill}
                       onClick={() => handlePillClick(pill)}
                       disabled={isSelected}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                        isSelected
-                          ? 'bg-white text-[#073F6C] border-2 border-[#073F6C] cursor-default'
-                          : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                      }`}
-                    >
-                      {pill}
-                    </button>
+                      sx={{
+                        flexShrink: 0,
+                        ...(isSelected
+                          ? {
+                              bgcolor: 'white',
+                              color: '#073F6C',
+                              border: '2px solid #073F6C',
+                              '&:hover': { bgcolor: 'white' },
+                            }
+                          : {
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                              color: 'white',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+                            }),
+                      }}
+                    />
                   );
                 })}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
-          <form onSubmit={handleSendMessage} className="flex gap-3 items-center">
+          <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
             {/* Text Input - Textarea that expands */}
-            <textarea
-              ref={textareaRef}
+            <TextField
+              inputRef={textareaRef}
+              multiline
+              fullWidth
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {
@@ -791,7 +813,23 @@ function ChatPageContent() {
               }}
               placeholder="Describe symptoms..."
               disabled={sending}
-              rows={1}
+              variant="outlined"
+              autoComplete="off"
+              sx={{
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 3,
+                  bgcolor: 'white',
+                  minHeight: '48px',
+                  maxHeight: '150px',
+                  '& textarea': {
+                    minHeight: '48px !important',
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                    lineHeight: 1.5,
+                  },
+                },
+              }}
               onBlur={() => {
                 // Force viewport update when keyboard closes
                 setTimeout(() => {
@@ -812,44 +850,41 @@ function ChatPageContent() {
                   }
                 }, 100);
               }}
-              className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed break-words resize-none overflow-y-auto min-h-[48px] max-h-[150px]"
-              autoComplete="off"
-              style={{ 
-                lineHeight: '1.5'
-              }}
             />
 
             {/* Send Button */}
-            <button
+            <Button
               type="submit"
+              variant="contained"
               disabled={!message.trim() || sending}
-              className="px-6 h-[48px] w-[80px] bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 flex-shrink-0"
+              startIcon={sending ? <CircularProgress size={16} sx={{ color: '#073F6C' }} /> : <SendIcon sx={{ transform: 'rotate(-90deg)' }} />}
+              sx={{
+                bgcolor: 'white',
+                color: '#073F6C',
+                borderRadius: 3,
+                height: '48px',
+                minWidth: { xs: '80px', sm: '100px' },
+                textTransform: 'uppercase',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                flexShrink: 0,
+                '&:hover': {
+                  bgcolor: 'grey.50',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'white',
+                  opacity: 0.5,
+                },
+                '& .MuiButton-startIcon': {
+                  marginRight: { xs: 0, sm: 1 },
+                },
+              }}
             >
-              {sending ? (
-                <>
-                  <div className="spinner w-4 h-4 border-2 border-[#073F6C] border-t-transparent"></div>
-                  <span className="hidden sm:inline">Sending</span>
-                </>
-              ) : (
-                <>
-                  <span className="hidden sm:inline">Send</span>
-                  <svg
-                    className="w-4 h-4 rotate-90"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                </>
-              )}
-            </button>
-          </form>
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                {sending ? 'Sending' : 'Send'}
+              </Box>
+            </Button>
+          </Box>
 
           {/* Helper text */}
           <p className="text-[10px] text-white/70 mt-4 text-center whitespace-nowrap">
@@ -864,9 +899,9 @@ function ChatPageContent() {
 export default function ChatPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-white">Loading...</div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Typography sx={{ color: 'white' }}>Loading...</Typography>
+      </Box>
     }>
       <ChatPageContent />
     </Suspense>

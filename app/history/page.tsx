@@ -7,6 +7,19 @@ import { useRequireAuth, AuthLoadingScreen } from '@/lib/hooks/useRequireAuth';
 import { getPetById } from '@/lib/services/pets';
 import { getConversationsForPet } from '@/lib/services/conversations';
 import type { Pet, Conversation } from '@/types';
+import {
+  Button,
+  CircularProgress,
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 function HistoryPageContent() {
   // ALL HOOKS MUST BE CALLED FIRST
@@ -97,33 +110,46 @@ function HistoryPageContent() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
   if (error || !pet) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
-        <div className="max-w-md w-full bg-white rounded-xl p-8 shadow-md">
-          <div className="text-center">
-            <h1 className="text-lg font-bold text-[#073F6C] mb-4">Error</h1>
-            <p className="text-sm text-gray-600 mb-6">{error || 'Pet not found'}</p>
-            <button
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center px-4 overflow-hidden">
+        <Box className="max-w-md w-full bg-white rounded-xl p-4 shadow-md">
+          <Box className="text-center">
+            <Typography variant="h3" sx={{ color: '#073F6C', mb: 2, fontWeight: 700 }}>
+              Error
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+              {error || 'Pet not found'}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
               onClick={() => router.push('/onboarding')}
-              className="w-full px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md"
+              sx={{
+                borderRadius: 3,
+                py: 1.5,
+                textTransform: 'uppercase',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+              }}
             >
               Back to Onboarding
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
@@ -145,28 +171,26 @@ function HistoryPageContent() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-1 ml-4">
-            <button
-              onClick={handleBackToChat}
-              className="flex flex-col items-center gap-1 px-3 py-2 text-white hover:text-white/80 transition-colors"
-              title="Back to chat"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 2 }}>
+            <Tooltip title="Back to chat">
+              <IconButton
+                onClick={handleBackToChat}
+                sx={{
+                  flexDirection: 'column',
+                  gap: 0.5,
+                  px: 1.5,
+                  py: 1,
+                  color: 'white',
+                  '&:hover': { color: 'rgba(255, 255, 255, 0.8)' },
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-              <span className="text-[10px] font-bold uppercase leading-tight">Chat</span>
-            </button>
-          </div>
+                <ChatIcon fontSize="small" />
+                <Typography variant="caption" sx={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.2 }}>
+                  Chat
+                </Typography>
+              </IconButton>
+            </Tooltip>
+          </Box>
         </div>
       </header>
 
@@ -175,90 +199,113 @@ function HistoryPageContent() {
         {/* Conversations List */}
         {conversations.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-xl p-14 text-center shadow-md">
-            <div className="w-14 h-14 bg-white/10 border-2 border-gray-200 rounded-xl flex items-center justify-center mx-auto mb-8">
-              <svg
-                className="w-7 h-7 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          <Card sx={{ borderRadius: 3, p: 7, textAlign: 'center' }}>
+            <CardContent>
+              <Box
+                sx={{
+                  width: 56,
+                  height: 56,
+                  bgcolor: 'action.hover',
+                  border: '2px solid',
+                  borderColor: 'divider',
+                  borderRadius: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mx: 'auto',
+                  mb: 4,
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-[#073F6C] mb-3">
-              No conversations yet
-            </h2>
-            <p className="text-sm text-gray-600 mb-8 leading-relaxed">
-              Start a conversation with {pet.name} to see history here.
-            </p>
-            <button
-              onClick={handleBackToChat}
-              className="px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase shadow-md"
-            >
-              Start New Conversation
-            </button>
-          </div>
+                <DescriptionIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
+              </Box>
+              <Typography variant="h3" sx={{ color: '#073F6C', mb: 1.5, fontWeight: 700 }}>
+                No conversations yet
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+                Start a conversation with {pet.name} to see history here.
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleBackToChat}
+                sx={{
+                  borderRadius: 3,
+                  py: 1.5,
+                  px: 3,
+                  textTransform: 'uppercase',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                }}
+              >
+                Start New Conversation
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           /* Conversations List */
-          <div className="space-y-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {conversations.map((conversation) => (
-              <div
+              <Card
                 key={conversation.id}
                 onClick={() => handleConversationClick(conversation.id)}
-                className="bg-white rounded-xl p-4 hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                sx={{
+                  borderRadius: 3,
+                  p: 2,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    boxShadow: 6,
+                  },
+                  transition: 'all 0.2s',
+                }}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <CardContent sx={{ p: '0 !important' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: 'action.hover',
+                        borderRadius: 3,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    {conversation.firstMessage && (
-                      <p className="text-sm text-[#073F6C] line-clamp-2 leading-relaxed mb-1">
-                        {conversation.firstMessage}
-                      </p>
-                    )}
-                    {!conversation.firstMessage && (
-                      <p className="text-xs text-gray-400 italic leading-relaxed mb-1">No messages yet</p>
-                    )}
-                    <span className="text-[10px] font-medium text-gray-500">
-                      {formatDate(conversation.createdAt)}
-                    </span>
-                  </div>
-                  <svg
-                    className="w-4 h-4 text-gray-400 group-hover:text-[#073F6C] transition-colors flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
+                      <ChatIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      {conversation.firstMessage && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#073F6C',
+                            mb: 0.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {conversation.firstMessage}
+                        </Typography>
+                      )}
+                      {!conversation.firstMessage && (
+                        <Typography variant="caption" sx={{ color: 'text.disabled', fontStyle: 'italic', mb: 0.5, display: 'block' }}>
+                          No messages yet
+                        </Typography>
+                      )}
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.625rem' }}>
+                        {formatDate(conversation.createdAt)}
+                      </Typography>
+                    </Box>
+                    <ArrowForwardIcon sx={{ fontSize: 16, color: 'text.secondary', flexShrink: 0 }} />
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </div>
+          </Box>
         )}
       </div>
     </div>
@@ -268,9 +315,9 @@ function HistoryPageContent() {
 export default function HistoryPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-white">Loading...</div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Typography sx={{ color: 'white' }}>Loading...</Typography>
+      </Box>
     }>
       <HistoryPageContent />
     </Suspense>

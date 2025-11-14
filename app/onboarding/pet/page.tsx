@@ -4,6 +4,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { createPet } from '@/lib/services/pets';
+import {
+  TextField,
+  Button,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItemButton,
+  ListItemText,
+} from '@mui/material';
 
 // Top 50 most common dog breeds
 const DOG_BREEDS = [
@@ -116,14 +135,14 @@ export default function AddPetPage() {
   // Show loading screen while checking auth or signing in anonymously
   if (authLoading || !user) {
     return (
-      <div className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full border-2 border-white border-t-transparent"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen bg-[#073F6C] flex items-center justify-center overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
@@ -211,275 +230,280 @@ export default function AddPetPage() {
         </div>
 
         {/* Form Card - Scrollable */}
-        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md flex-1 flex flex-col min-h-0 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 flex-1 flex flex-col">
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl fade-in">
-                <div className="flex items-start gap-2">
-                  <svg
-                    className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="text-red-600 text-xs font-medium leading-relaxed">{error}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Success Message */}
-            {success && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-xl fade-in">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-green-600 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <p className="text-green-600 text-xs font-medium leading-relaxed">
-                    Pet saved successfully. Redirecting...
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-xs font-medium text-[#073F6C] mb-1.5">
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                onFocus={(e) => {
-                  setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }, 300);
-                }}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                placeholder="e.g., Max, Bella"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Species */}
-            <div>
-              <label className="block text-xs font-medium text-[#073F6C] mb-2">
-                Species
-              </label>
-              <div className="flex gap-8">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="species"
-                    value="dog"
-                    checked={formData.species === 'dog'}
-                    onChange={(e) => {
-                      setFormData({ ...formData, species: e.target.value as 'dog', breed: '' });
-                      setShowBreedSuggestions(false);
-                    }}
-                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
-                    disabled={loading}
-                  />
-                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
-                    Dog
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="species"
-                    value="cat"
-                    checked={formData.species === 'cat'}
-                    onChange={(e) => {
-                      setFormData({ ...formData, species: e.target.value as 'cat', breed: '' });
-                      setShowBreedSuggestions(false);
-                    }}
-                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
-                    disabled={loading}
-                  />
-                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
-                    Cat
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Age and Weight Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Age */}
-              <div>
-                <label htmlFor="age" className="block text-xs font-medium text-[#073F6C] mb-1.5">
-                  Age (years)
-                </label>
-                <input
-                  type="number"
-                  id="age"
-                  min="0"
-                  step="0.5"
-                  value={formData.age}
-                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                  onFocus={(e) => {
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  placeholder="e.g., 3"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Weight */}
-              <div>
-                <label htmlFor="weight" className="block text-xs font-medium text-[#073F6C] mb-1.5">
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  id="weight"
-                  min="0"
-                  step="0.1"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                  onFocus={(e) => {
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  placeholder="e.g., 15"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label className="block text-xs font-medium text-[#073F6C] mb-2">
-                Gender
-              </label>
-              <div className="flex gap-8">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="Male"
-                    checked={formData.gender === 'Male'}
-                    onChange={(e) => {
-                      setFormData({ ...formData, gender: e.target.value as 'Male' });
-                    }}
-                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
-                    disabled={loading}
-                  />
-                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
-                    Male
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="Female"
-                    checked={formData.gender === 'Female'}
-                    onChange={(e) => {
-                      setFormData({ ...formData, gender: e.target.value as 'Female' });
-                    }}
-                    className="w-4 h-4 text-[#073F6C] focus:ring-[#073F6C] cursor-pointer"
-                    disabled={loading}
-                  />
-                  <span className="text-sm text-[#073F6C] group-hover:text-[#073F6C]/80 transition-colors">
-                    Female
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Breed with Autocomplete */}
-            <div className="relative">
-              <label htmlFor="breed" className="block text-xs font-medium text-[#073F6C] mb-1.5">
-                Breed
-              </label>
-              <input
-                ref={breedInputRef}
-                type="text"
-                id="breed"
-                value={formData.breed}
-                onChange={(e) => handleBreedChange(e.target.value)}
-                onFocus={(e) => {
-                  setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }, 300);
-                  if (formData.species && formData.breed.trim()) {
-                    setShowBreedSuggestions(true);
-                  }
-                }}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-[#073F6C] focus:ring-2 focus:ring-[#073F6C]/20 transition-all duration-200 text-sm bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                placeholder={formData.species ? `Select or type ${formData.species} breed...` : 'Select species first'}
-                disabled={loading || !formData.species}
-              />
-              
-              {/* Autocomplete Suggestions */}
-              {showBreedSuggestions && filteredBreeds.length > 0 && (
-                <div
-                  ref={breedListRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto"
-                >
-                  {filteredBreeds.slice(0, 15).map((breed) => (
-                    <button
-                      key={breed}
-                      type="button"
-                      onClick={() => handleBreedSelect(breed)}
-                      className="w-full px-4 py-2.5 text-left text-sm text-[#073F6C] hover:bg-[#073F6C]/5 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                    >
-                      {breed}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="pt-3 mt-auto pb-6" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-6 py-3 bg-[#073F6C] text-white rounded-xl hover:bg-[#073F6C]/90 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="spinner w-4 h-4 border-2 border-white border-t-transparent"></div>
-                    <span>Saving</span>
-                  </>
-                ) : (
-                  'Continue'
+        <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, borderRadius: 3 }}>
+          <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, p: { xs: 2, sm: 3 } }}>
+            <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 }, flex: 1 }}>
+                {/* Error Message */}
+                {error && (
+                  <Alert severity="error" sx={{ borderRadius: 3 }}>
+                    {error}
+                  </Alert>
                 )}
-              </button>
-            </div>
 
-            <p className="text-center text-xs text-gray-500 leading-relaxed mt-2 pb-2">
-              * All fields are required
-            </p>
-          </form>
-        </div>
+                {/* Success Message */}
+                {success && (
+                  <Alert severity="success" sx={{ borderRadius: 3 }}>
+                    Pet saved successfully. Redirecting...
+                  </Alert>
+                )}
+
+                {/* Name */}
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Max, Bella"
+                  disabled={loading}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                    },
+                  }}
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
+                />
+
+                {/* Species */}
+                <FormControl component="fieldset" disabled={loading}>
+                  <FormLabel sx={{ fontSize: '0.75rem', fontWeight: 500, color: '#073F6C', mb: 1 }}>
+                    Species
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    value={formData.species}
+                    onChange={(e) => {
+                      setFormData({ ...formData, species: e.target.value as 'dog' | 'cat', breed: '' });
+                      setShowBreedSuggestions(false);
+                    }}
+                    sx={{ gap: 4 }}
+                  >
+                    <FormControlLabel
+                      value="dog"
+                      control={<Radio sx={{ color: '#073F6C' }} />}
+                      label="Dog"
+                      sx={{
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          color: '#073F6C',
+                        },
+                      }}
+                    />
+                    <FormControlLabel
+                      value="cat"
+                      control={<Radio sx={{ color: '#073F6C' }} />}
+                      label="Cat"
+                      sx={{
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          color: '#073F6C',
+                        },
+                      }}
+                    />
+                  </RadioGroup>
+                </FormControl>
+
+                {/* Age and Weight Row */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  {/* Age */}
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Age (years)"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    placeholder="e.g., 3"
+                    disabled={loading}
+                    variant="outlined"
+                    inputProps={{ min: 0, step: 0.5 }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                      },
+                    }}
+                    onFocus={(e) => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300);
+                    }}
+                  />
+
+                  {/* Weight */}
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Weight (kg)"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                    placeholder="e.g., 15"
+                    disabled={loading}
+                    variant="outlined"
+                    inputProps={{ min: 0, step: 0.1 }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                      },
+                    }}
+                    onFocus={(e) => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300);
+                    }}
+                  />
+                </Box>
+
+                {/* Gender */}
+                <FormControl component="fieldset" disabled={loading}>
+                  <FormLabel sx={{ fontSize: '0.75rem', fontWeight: 500, color: '#073F6C', mb: 1 }}>
+                    Gender
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    value={formData.gender}
+                    onChange={(e) => {
+                      setFormData({ ...formData, gender: e.target.value as 'Male' | 'Female' });
+                    }}
+                    sx={{ gap: 4 }}
+                  >
+                    <FormControlLabel
+                      value="Male"
+                      control={<Radio sx={{ color: '#073F6C' }} />}
+                      label="Male"
+                      sx={{
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          color: '#073F6C',
+                        },
+                      }}
+                    />
+                    <FormControlLabel
+                      value="Female"
+                      control={<Radio sx={{ color: '#073F6C' }} />}
+                      label="Female"
+                      sx={{
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.875rem',
+                          color: '#073F6C',
+                        },
+                      }}
+                    />
+                  </RadioGroup>
+                </FormControl>
+
+                {/* Breed with Autocomplete */}
+                <Box sx={{ position: 'relative' }}>
+                  <TextField
+                    inputRef={breedInputRef}
+                    fullWidth
+                    label="Breed"
+                    value={formData.breed}
+                    onChange={(e) => handleBreedChange(e.target.value)}
+                    placeholder={formData.species ? `Select or type ${formData.species} breed...` : 'Select species first'}
+                    disabled={loading || !formData.species}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 3,
+                      },
+                    }}
+                    onFocus={(e) => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300);
+                      if (formData.species && formData.breed.trim()) {
+                        setShowBreedSuggestions(true);
+                      }
+                    }}
+                  />
+                  
+                  {/* Autocomplete Suggestions */}
+                  {showBreedSuggestions && filteredBreeds.length > 0 && (
+                    <Paper
+                      ref={breedListRef}
+                      sx={{
+                        position: 'absolute',
+                        zIndex: 10,
+                        width: '100%',
+                        mt: 0.5,
+                        maxHeight: 192,
+                        overflow: 'auto',
+                        borderRadius: 3,
+                      }}
+                    >
+                      <List dense>
+                        {filteredBreeds.slice(0, 15).map((breed) => (
+                          <ListItemButton
+                            key={breed}
+                            onClick={() => handleBreedSelect(breed)}
+                            sx={{
+                              '&:hover': {
+                                bgcolor: 'rgba(7, 63, 108, 0.05)',
+                              },
+                            }}
+                          >
+                            <ListItemText
+                              primary={breed}
+                              primaryTypographyProps={{
+                                fontSize: '0.875rem',
+                                color: '#073F6C',
+                              }}
+                            />
+                          </ListItemButton>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+                </Box>
+
+                {/* Submit Button */}
+                <Box
+                  sx={{
+                    pt: 1.5,
+                    mt: 'auto',
+                    pb: { xs: 3, sm: 4 },
+                    paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px) + 1.5rem)',
+                  }}
+                >
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    disabled={loading}
+                    startIcon={loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : null}
+                    sx={{
+                      borderRadius: 3,
+                      py: 1.5,
+                      textTransform: 'uppercase',
+                      fontWeight: 700,
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {loading ? 'Saving' : 'Continue'}
+                  </Button>
+                </Box>
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                    mt: 1,
+                    pb: 1,
+                    display: 'block',
+                  }}
+                >
+                  * All fields are required
+                </Typography>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

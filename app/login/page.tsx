@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getUserPets } from '@/lib/services/pets';
 import { auth } from '@/lib/firebase';
+import { Button, CircularProgress, Box, Typography, Alert } from '@mui/material';
+import GoogleIcon from '@mui/icons-material/Google';
 
 function LoginPageContent() {
   const { user, loading, signInWithGoogle, upgradeAnonymousAccount, isAnonymous } = useAuth();
@@ -152,14 +154,14 @@ function LoginPageContent() {
   // Show loading only if auth is loading and we're not signing in
   if (loading && !isSigningIn) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
@@ -170,106 +172,97 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] px-4 sm:px-6 overflow-hidden">
-      <div className="w-full max-w-md lg:max-w-lg">
+    <Box className="h-screen w-screen flex items-center justify-center bg-[#073F6C] px-4 sm:px-6 overflow-hidden">
+      <Box className="w-full max-w-md lg:max-w-lg">
         {/* Logo */}
-        <div className="text-center mb-12">
-          <div className="mb-8 flex justify-center">
+        <Box className="text-center mb-12">
+          <Box className="mb-8 flex justify-center">
             <img
               src="/logo.png"
               alt="LetsVet Logo"
               className="max-w-[280px] w-auto h-auto"
               style={{ maxWidth: '280px', height: 'auto' }}
             />
-          </div>
+          </Box>
           
           {/* Tagline */}
-          <p className="text-white text-base leading-relaxed font-light">
+          <Typography variant="body1" sx={{ color: 'white', fontWeight: 300 }}>
             Instant AI guidance for your pet&apos;s health concerns
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Card */}
-        <div className="bg-[#073F6C]">
+        <Box className="bg-[#073F6C]">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-white/10 border border-white/20 rounded-xl fade-in">
-              <div className="flex items-start gap-3">
-                <svg
-                  className="w-4 h-4 text-white flex-shrink-0 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p className="text-white text-xs font-medium leading-relaxed">{error}</p>
-              </div>
-            </div>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                '& .MuiAlert-icon': {
+                  color: 'white',
+                },
+                '& .MuiAlert-message': {
+                  color: 'white',
+                  fontSize: '0.75rem',
+                },
+              }}
+            >
+              {error}
+            </Alert>
           )}
 
           {/* Google Sign In Button */}
-          <button
+          <Button
+            variant="contained"
+            fullWidth
             onClick={handleSignIn}
             disabled={isSigningIn}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white text-[#073F6C] rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 font-bold text-sm uppercase touch-target shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            startIcon={isSigningIn ? <CircularProgress size={16} sx={{ color: '#073F6C' }} /> : <GoogleIcon />}
+            sx={{
+              bgcolor: 'white',
+              color: '#073F6C',
+              borderRadius: 3,
+              py: 1.75,
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              '&:hover': {
+                bgcolor: 'grey.50',
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'white',
+                opacity: 0.5,
+              },
+            }}
           >
-            {isSigningIn ? (
-              <>
-                <div className="spinner w-4 h-4 border-2 border-[#073F6C] border-t-transparent"></div>
-                <span>Signing In</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-              </>
-            )}
-          </button>
+            {isSigningIn ? 'Signing In' : 'Continue with Google'}
+          </Button>
 
           {/* Footer Text */}
-          <p className="mt-8 text-center text-xs text-white/70 leading-relaxed">
+          <Typography variant="caption" sx={{ mt: 2, textAlign: 'center', color: 'rgba(255, 255, 255, 0.7)', display: 'block' }}>
             By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
-        <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-4">
-            <div className="spinner w-full h-full"></div>
-          </div>
-          <p className="text-white text-sm">Loading</p>
-        </div>
-      </div>
+      <Box className="h-screen w-screen flex items-center justify-center bg-[#073F6C] overflow-hidden">
+        <Box className="text-center">
+          <CircularProgress size={32} sx={{ color: 'white', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'white' }}>
+            Loading
+          </Typography>
+        </Box>
+      </Box>
     }>
       <LoginPageContent />
     </Suspense>
